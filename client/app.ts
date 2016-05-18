@@ -19,7 +19,7 @@ class Socially {
     getsra(id){
         console.log('Clicked');
         this.output = sra(id).then(response => response.Record);
-        //console.log(this.output);
+        console.log(this.output);
         return(this.output);
     }
     onChange(classId,flag){

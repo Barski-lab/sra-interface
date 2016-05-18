@@ -1,3 +1,4 @@
+<!--Styling-->
 <style>
     input[type=text], select {
         width: 100%;
@@ -24,7 +25,7 @@
         padding: 40px;
     }
 </style>
-
+<!--SRA Input-->
 <div class="field">
     <label for="sranum">SRA / SRX / SRP / GSE / GSM number</label>
     <input type="text" name="sranum" #sra>
@@ -32,22 +33,32 @@
         RETRIEVE
     </button>
 </div>
+<!--Selection-->
 <ul>
-        <span *ngFor="#ca of relevantdata; #i=index">
-            <input type="checkbox"  id="{{ca.id}}" #cv [checked]=false
-                   (change)="onChange(ca.id,cv.checked)">
-            {{ca}},{{cv.checked}} <br>
-            {{items}}
-        </span>
-
+    <span *ngFor="let ca of relevantdata; let i of index">
+        <input type="checkbox"  id="{{ca.i}}"
+               #cv [checked]=false (change)="onChange(ca.id,cv.checked)">
+        {{ca}},{{cv.checked}} <br>
+    </span>
 </ul>
 
-<tr *ngFor = "let item of output.__zone_symbol__value">
+<!--Displaying input-->
+<tr *ngFor = "let item of output.__zone_symbol__value; let i of index">
     <div class="field">
-        EXPERIMENT ALIAS: {{item.EXPERIMENT.alias | displaypipe}}<br>
-        EXPERIMENT ACCESSION: {{item.EXPERIMENT.accession | displaypipe}}<br>
-        EXPERIMENT TITLE: {{item.EXPERIMENT.TITLE | displaypipe}}
+        <!--EXPERIMENT ALIAS: {{item.EXPERIMENT.alias | displaypipe}}<br>-->
+        <!--EXPERIMENT ACCESSION: {{item.EXPERIMENT.accession | displaypipe}}<br>-->
+        <!--EXPERIMENT TITLE: {{item.EXPERIMENT.TITLE | displaypipe}}<br>-->
+        <!--LIBRARY PROTOCOL: {{item.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL | displaypipe}}<br>-->
+        <!--LIBRARY SELECTION: {{item.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_SELECTION | displaypipe}}<br>-->
         <!--{{item | displaypipe}}-->
+        ASSAY TYPE: {{item.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY| displaypipe}}<br>
+        BIOPROJECT: {{item.EXPERIMENT.alias | displaypipe}}<br>
+        CENTRE NAME: {{item.EXPERIMENT.center_name | displaypipe}}<br>
+        LIBRARY SELECTION: {{item.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_SELECTION | displaypipe}}<br>
+        LIBRARY SOURCE: {{item.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_SOURCE | displaypipe}}<br>
+        <!--SAMPLE ACCESSION: {{item.SAMPLE.SAMPLE_NAME.accession}}<br>-->
+        <!--SAMPLE TITLE: {{item.SAMPLE.SAMPLE_NAME.TITLE}}<br>-->
+        <!--SAMPLE Alias: {{item.SAMPLE.SAMPLE_NAME.alias}}<br>-->
     </div>
     <br>
 </tr>
