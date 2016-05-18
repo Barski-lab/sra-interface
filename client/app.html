@@ -1,0 +1,54 @@
+<style>
+    input[type=text], select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    button {
+        width: 100%;
+        background-color: #0066FF;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    div {
+        border-radius: 5px;
+        background-color: #f2f2f2;
+        padding: 40px;
+    }
+</style>
+
+<div class="field">
+    <label for="sranum">SRA / SRX / SRP / GSE / GSM number</label>
+    <input type="text" name="sranum" #sra>
+    <button (click)="getsra(sra.value)">
+        RETRIEVE
+    </button>
+</div>
+<ul>
+        <span *ngFor="#ca of relevantdata; #i=index">
+            <input type="checkbox"  id="{{ca.id}}" #cv [checked]=false
+                   (change)="onChange(ca.id,cv.checked)">
+            {{ca}},{{cv.checked}} <br>
+            {{items}}
+        </span>
+
+</ul>
+
+<tr *ngFor = "let item of output.__zone_symbol__value">
+    <div class="field">
+        EXPERIMENT ALIAS: {{item.EXPERIMENT.alias | displaypipe}}<br>
+        EXPERIMENT ACCESSION: {{item.EXPERIMENT.accession | displaypipe}}<br>
+        EXPERIMENT TITLE: {{item.EXPERIMENT.TITLE | displaypipe}}
+        <!--{{item | displaypipe}}-->
+    </div>
+    <br>
+</tr>
+
