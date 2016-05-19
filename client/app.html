@@ -26,40 +26,59 @@
     }
 </style>
 <!--SRA Input-->
-<div class="field">
+
     <label for="sranum">SRA / SRX / SRP / GSE / GSM number</label>
     <input type="text" name="sranum" #sra>
-    <button (click)="getsra(sra.value)">
+    <button (click)="getsra(sra.value)" (click)="Selected()" id ='button1'>
         RETRIEVE
     </button>
-</div>
+
 <!--Selection-->
-<ul>
-    <span *ngFor="let ca of relevantdata; let i of index">
-        <input type="checkbox"  id="{{ca.i}}"
-               #cv [checked]=false (change)="onChange(ca.id,cv.checked)">
-        {{ca}},{{cv.checked}} <br>
-    </span>
-</ul>
+<!--<ul>-->
+    <!--<span *ngFor="let ca of relevantdata; #i = index">-->
+        <!--<input type="checkbox"  id="{{i}}"-->
+               <!--#cv [checked]=false (change)="onChange(ca.id,cv.checked)">-->
+        <!--{{i}},{{cv.checked}} <br>-->
+    <!--</span>-->
+<!--</ul>-->
 
 <!--Displaying input-->
-<tr *ngFor = "let item of output.__zone_symbol__value; let i of index">
+<ul *ngIf="output?.__zone_symbol__value?.length > 1">
+<tr *ngFor="let item of output.__zone_symbol__value; #i = index">
     <div class="field">
-        <!--EXPERIMENT ALIAS: {{item.EXPERIMENT.alias | displaypipe}}<br>-->
-        <!--EXPERIMENT ACCESSION: {{item.EXPERIMENT.accession | displaypipe}}<br>-->
-        <!--EXPERIMENT TITLE: {{item.EXPERIMENT.TITLE | displaypipe}}<br>-->
-        <!--LIBRARY PROTOCOL: {{item.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL | displaypipe}}<br>-->
-        <!--LIBRARY SELECTION: {{item.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_SELECTION | displaypipe}}<br>-->
         <!--{{item | displaypipe}}-->
-        ASSAY TYPE: {{item.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY| displaypipe}}<br>
-        BIOPROJECT: {{item.EXPERIMENT.alias | displaypipe}}<br>
-        CENTRE NAME: {{item.EXPERIMENT.center_name | displaypipe}}<br>
-        LIBRARY SELECTION: {{item.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_SELECTION | displaypipe}}<br>
-        LIBRARY SOURCE: {{item.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_SOURCE | displaypipe}}<br>
-        <!--SAMPLE ACCESSION: {{item.SAMPLE.SAMPLE_NAME.accession}}<br>-->
-        <!--SAMPLE TITLE: {{item.SAMPLE.SAMPLE_NAME.TITLE}}<br>-->
-        <!--SAMPLE Alias: {{item.SAMPLE.SAMPLE_NAME.alias}}<br>-->
-    </div>
+        <!--<input id="assay type" name='data1'  type="checkbox" [(ngModel)]="inputValue" (change)="onCheck($event)">-->
+        <!--<label>ASSAY TYPE:{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY| displaypipe}}</label>-->
+        ASSAY TYPE: {{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY| displaypipe}}<br>
+        <!--<input class="mycheckbox" type="checkbox" [(ng-model)]="data.selected"> {{data}}-->
+        BIOPROJECT: {{item?.EXPERIMENT?.alias | displaypipe}}<br>
+        CENTRE NAME: {{item?.EXPERIMENT?.center_name | displaypipe}}<br>
+        LIBRARY SELECTION: {{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION | displaypipe}}<br>
+        LIBRARY SOURCE: {{item?.EXPERIMENT?.DESIGN.LIBRARY_DESCRIPTOR?.LIBRARY_SOURCE | displaypipe}}<br>
+        RUN ACCESSION: <a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(item?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{item.RUN_SET.RUN.accession | displaypipe}}</a>
+        <br>
+        <tr *ngFor="let value of item.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE; #j = index">
+    {{'STRAIN' + (j+1) + ': '}}{{value?.TAG + '_' + value?.VALUE}}<br> </tr>
+        PROTOCOL: {{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}}<br>
+        ORGANISM: {{item?.Pool?.Member?.organism}} <br>
+</div>
     <br>
 </tr>
+<!--<button class="button" (click) ="Selected()">SUBMIT</button>-->
+</ul>
 
+
+<ul *ngIf="!(output?.__zone_symbol__value | isarray) && output?.__zone_symbol__value">
+    <div class="field">
+    ASSAY TYPE: {{output?.__zone_symbol__value?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY| displaypipe}}<br>
+    BIOPROJECT: {{output?.__zone_symbol__value?.EXPERIMENT?.alias | displaypipe}}<br>
+    CENTRE NAME: {{output?.__zone_symbol__value?.EXPERIMENT?.center_name | displaypipe}}<br>
+    LIBRARY SELECTION: {{output?.__zone_symbol__value?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION | displaypipe}}<br>
+    LIBRARY SOURCE: {{output?.__zone_symbol__value?.EXPERIMENT?.DESIGN.LIBRARY_DESCRIPTOR?.LIBRARY_SOURCE | displaypipe}}<br>
+    RUN ACCESSION: <a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/'+(output?.__zone_symbol__value?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(output?.__zone_symbol__value?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(output?.__zone_symbol__value?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{output?.__zone_symbol__value.RUN_SET.RUN.accession | displaypipe}}</a><br>
+    <tr *ngFor="let value of output.__zone_symbol__value.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE; #j = index">
+    {{'STRAIN' + (j+1) + ': '}}{{value?.TAG + '_' + value?.VALUE}}<br> </tr>
+    PROTOCOL: {{output?.__zone_symbol__value?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}}<br>
+    ORGANISM: {{output?.__zone_symbol__value?.Pool?.Member?.organism}} <br>
+</div>
+</ul>

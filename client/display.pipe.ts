@@ -1,3 +1,4 @@
+
 import {Pipe} from '@angular/core';
 
 @Pipe({
@@ -6,6 +7,6 @@ import {Pipe} from '@angular/core';
 
 export class DisplayPipe{
     transform(value){
-        return JSON.stringify(value).replace(/\"/g," ");
+        return JSON.stringify(value).replace(/\"/g,"");
     }
 }
