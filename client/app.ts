@@ -9,6 +9,8 @@ import { NO_SANITIZATION_PROVIDERS } from './sanity';
 import {IsArray} from "./isarray";
 import {LayoutPipe} from "./layout.pipe";
 import {LinkCheck} from "./linkcheck.service";
+import { Mongo }     from 'meteor/mongo';
+import {relevant_data} from "../collections/relevant_data.ts"
 
 @Component({
     selector: 'app',
@@ -20,26 +22,39 @@ import {LinkCheck} from "./linkcheck.service";
 class Socially {
     public gross:Object = [];
     public output;
-    public relevantdata = ['assay type','EXP_ACC','EXP_TITLE'];
+    relevant: Mongo.Cursor<Object>;
+    //public relevantdata = ['assay type', 'EXP_ACC', 'EXP_TITLE'];
+
     //public arr;
-    constructor(private check:LinkCheck){
+
+
+
+    constructor(private check:LinkCheck) {
     }
 
-    getsra(id){
+    getsra(id) {
         console.log('Clicked');
         this.output = sra(id).then(response => response.Record);
         console.log(this.output);
-        return(this.output);
+        return (this.output);
     }
-    Selected(){
+
+    Selected() {
         console.log('ok');
+        //this.checkbox();
+        //<HTMLInputElement>
         //this.students.filter(_ => _.selected).forEach(_ => { ... })
     }
 
-    checkbox(item,i){
-        console.log(item+i);
-        this.gross[i]=item;
-        this.check.check('ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR104/SRR1049521/SRR104952.sra');
+    checkbox(item, i, event, text) {
+        console.log(text);
+        console.log(text+ item + i);
+        if (event.target.checked){
+            console.log('success');
+        }
+        console.log(item);
+        // this.gross[i] = item;
+        //this.check.check('ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR104/SRR1049521/SRR104952.sra');
     }
 }
 

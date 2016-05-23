@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HTTP } from 'meteor/http';
-import { } from 'meteor/http'
+//import { } from 'meteor/http'
 @Injectable()
 
 export class LinkCheck {

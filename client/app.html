@@ -46,17 +46,24 @@
 <ul *ngIf="output?.__zone_symbol__value?.length > 1">
 <tr *ngFor="let item of output.__zone_symbol__value; #i = index">
     <div class="field">
-        <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY, i)">
+
+        <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY, i, $event,'assay_type')">
 
         ASSAY TYPE: {{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY| displaypipe}}<br>
+
+        <input #{{item?.EXPERIMENT?.alias}} [ngModel] = 'item?.EXPERIMENT?.alias.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.alias, i, $event, 'bio_project')">
 
         BIOPROJECT: {{item?.EXPERIMENT?.alias | displaypipe}}<br>
 
         CENTRE NAME: {{item?.EXPERIMENT?.center_name | displaypipe}}<br>
 
+        <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION, i, $event, 'lib_select')">
+
         LIBRARY SELECTION: {{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION | displaypipe}}<br>
 
         LIBRARY SOURCE: {{item?.EXPERIMENT?.DESIGN.LIBRARY_DESCRIPTOR?.LIBRARY_SOURCE | displaypipe}}<br>
+
+        <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT, i, $event, 'lib_layout')">
 
         LAYOUT: {{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT | displaypipe | layoutpipe}}<br>
 
@@ -67,17 +74,24 @@
 
         PROTOCOL: {{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}}<br>
 
+    <input #{{item?.Pool?.Member?.organism}} [ngModel] = 'item?.Pool?.Member?.organism.selected' type="checkbox" (change)="checkbox(item?.Pool?.Member?.organism, i, $event, 'organism')">
         ORGANISM: {{item?.Pool?.Member?.organism}} <br>
+
+
+    SUBMISSION ALAIS:
 </div>
     <br>
 </tr>
-<!--<button class="button" (click) ="Selected()">SUBMIT</button>-->
+
+    <button class="button" (click) ="Selected()">SUBMIT</button>
 </ul>
 
 
 <ul *ngIf="!(output?.__zone_symbol__value | isarray) && output?.__zone_symbol__value">
     <div class="field">
-    ASSAY TYPE: {{output?.__zone_symbol__value?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY| displaypipe}}<br>
+        <input #{{output?.__zone_symbol__value?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY}} [ngModel] = 'output?.__zone_symbol__value?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY.selected' type="checkbox" (change)="checkbox(output?.__zone_symbol__value?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY, i, $event,'assay_type')">
+
+        ASSAY TYPE: {{output?.__zone_symbol__value?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY| displaypipe}}<br>
     BIOPROJECT: {{output?.__zone_symbol__value?.EXPERIMENT?.alias | displaypipe}}<br>
     CENTRE NAME: {{output?.__zone_symbol__value?.EXPERIMENT?.center_name | displaypipe}}<br>
     LIBRARY SELECTION: {{output?.__zone_symbol__value?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION | displaypipe}}<br>
