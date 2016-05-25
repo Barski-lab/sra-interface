@@ -11,7 +11,7 @@
     }
     button {
         width: 100%;
-        background-color: #0066FF;
+        background-color: #4194ff;
         color: white;
         padding: 14px 20px;
         margin: 8px 0;
@@ -24,12 +24,15 @@
         background-color: #f2f2f2;
         padding: 40px;
     }
+    l {
+        color: dodgerblue;
+    }
 </style>
 <!--SRA Input-->
 
-    <label for="sranum">SRA / SRX / SRP / GSE / GSM number</label>
+    SRA / SRX / SRP / GSE / GSM number
     <input type="text" name="sranum" #sra>
-    <button (click)="getsra(sra.value)" (click)="Selected()" id ='button1'>
+    <button (click)="getsra(sra.value)" id ='button1'>
         RETRIEVE
     </button>
 
@@ -49,25 +52,25 @@
 
         <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY, i, $event,'assay_type')">
 
-        ASSAY TYPE: {{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY| displaypipe}}<br>
+        <l>ASSAY TYPE: </l>{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY| displaypipe}}<br>
 
         <input #{{item?.EXPERIMENT?.alias}} [ngModel] = 'item?.EXPERIMENT?.alias.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.alias, i, $event, 'bio_project')">
 
-        BIOPROJECT: {{item?.EXPERIMENT?.alias | displaypipe}}<br>
+        <l>BIOPROJECT: </l>{{item?.EXPERIMENT?.alias | displaypipe}}<br>
 
-        CENTRE NAME: {{item?.EXPERIMENT?.center_name | displaypipe}}<br>
+        <l>CENTRE NAME: </l>{{item?.EXPERIMENT?.center_name | displaypipe}}<br>
 
         <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION, i, $event, 'lib_select')">
 
-        LIBRARY SELECTION: {{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION | displaypipe}}<br>
+        <l>LIBRARY SELECTION: </l>{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION | displaypipe}}<br>
 
-        LIBRARY SOURCE: {{item?.EXPERIMENT?.DESIGN.LIBRARY_DESCRIPTOR?.LIBRARY_SOURCE | displaypipe}}<br>
+            <l>LIBRARY SOURCE: </l>{{item?.EXPERIMENT?.DESIGN.LIBRARY_DESCRIPTOR?.LIBRARY_SOURCE | displaypipe}}<br>
 
         <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT, i, $event, 'lib_layout')">
 
-        LAYOUT: {{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT | displaypipe | layoutpipe}}<br>
+                <l>LAYOUT: </l>{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT | displaypipe | layoutpipe}}<br>
 
-        RUN ACCESSION: <a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 3)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(item?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{item.RUN_SET.RUN.accession | displaypipe}}</a>
+                    <l>RUN ACCESSION: </l><a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 3)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(item?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{item.RUN_SET.RUN.accession | displaypipe}}</a>
         <br>
         <tr *ngFor="let value of item.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE; #j = index">
     {{'STRAIN' + (j+1) + ': '}}{{value?.TAG + '_' + value?.VALUE}}<br> </tr>
@@ -78,7 +81,8 @@
         ORGANISM: {{item?.Pool?.Member?.organism}} <br>
 
 
-    SUBMISSION ALAIS:
+    SUBMISSION ACCESSION:{{item?.SUBMISSION?.accession}} <br>
+    SUBMISSION ALIAS:{{item?.SUBMISSION?.alias}} <br>
 </div>
     <br>
 </tr>
