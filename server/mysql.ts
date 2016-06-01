@@ -1,5 +1,4 @@
-import { Meteor } from 'meteor/meteor';
-import {Observable} from 'rxjs';
+
 var Mysql = Npm.require('mysql');
 var pool = Mysql.createPool({
             host:"localhost",

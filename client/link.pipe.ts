@@ -9,10 +9,12 @@ export class LinkPipe {
             return val;
         }
 
-        if (val.length > args) {
-            return val.substring(0, args);
-        } else {
-            return val;
+        if (val){
+            if (val.length > args) {
+                return val.substring(0, args);
+            } else {
+                return val;
+            }
         }
     }
 }

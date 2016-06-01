@@ -6,6 +6,8 @@ import {Pipe} from '@angular/core';
 
 export class DisplayPipe{
     transform(value){
-        return JSON.stringify(value).replace(/\"/g,"");
+        if(value){
+            return JSON.stringify(value).replace(/\"/g,"");
+        }
     }
 }

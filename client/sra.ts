@@ -2,26 +2,26 @@ import { HTTP } from 'meteor/http';
 
 export function sra(sra){
     return new Promise((resolve,reject) => {
-        var url = 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=sra&retMode=JSON&term='+sra;
-        HTTP.call('GET',url,{timeout: 30000}, function(err,res){
+        var url = 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=sra&retMode=JSON&retmax=100&term='+sra;
+        HTTP.call('GET',url,{timeout: 50000}, function(err,res){
             if (err) reject(err.reason);
             else{
                 var id = [];
                 var json = JSON.parse(xmlToJson(res.content));
                 id.push(json.eSearchResult.IdList.Id)
                 var url1='http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=sra&id='+id.join(',');
-                HTTP.call('GET',url1,{timeout: 30000}, function(err,result){
+                HTTP.call('GET',url1,{timeout: 50000}, function(err,result){
                     if (err) reject(err.reason);
                     else{
                         var id2=[]
-                        var json2 = JSON.parse(xmlToJson(result.content))
+                        var json2 = JSON.parse(xmlToJson(result.content));
                         id2.push(json2.EXPERIMENT_PACKAGE_SET.EXPERIMENT_PACKAGE)
                         resolve({SRAid:id[0],Record:id2[0]})
                     }
                 });
             }
         });
-    })
+    });
 }
 
 /*    This function below is licensed under Creative Commons GNU LGPL License.
@@ -152,10 +152,10 @@ var xmlToJson = function(xml) {
                 return s;
             },
             escape: function(txt) {
-                return txt.replace(/[\\]/g, "\\\\")
-                    .replace(/[\"]/g, '\\"')
-                    .replace(/[\n]/g, '\\n')
-                    .replace(/[\r]/g, '\\r');
+                    return txt.replace(/[\\]/g, "\\\\")
+                        .replace(/[\"]/g, '\\"')
+                        .replace(/[\n]/g, '\\n')
+                        .replace(/[\r]/g, '\\r');
             },
             removeWhite: function(e) {
                 e.normalize();

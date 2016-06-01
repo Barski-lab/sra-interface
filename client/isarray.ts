@@ -7,6 +7,9 @@ import {isArray} from "rxjs/util/isArray";
 
 export class IsArray{
     transform(value){
-        return isArray(value);
+        if (value){
+            return isArray(value);
+        }
+
     }
 }
