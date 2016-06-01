@@ -33,18 +33,21 @@ Meteor.methods({
         return new Promise((resolve, reject)=> {
             pool.getConnection((err, connection) => {
                 console.log('ok');
-                connection.query(
-                    //'INSERT INTO labdata ( uid,deleted, libstatus, author, notes, protocol, dateadd, url, genome_id, expereminttype_id  ) values', [], (err, rows, fields)=> {
-                    'INSERT INTO labdata SET ?', [data] , (err, res)=> {
-                        connection.release();
-                        if (err == null) {
-                            console.log('Added' + data.uid);
-                            resolve(res);
-                        } else {
-                            console.log(err);
-                            reject('nothing');
-                        }
-                    });
+                for (var i= 0; i<data.length; i++){
+                    connection.query(
+                        //'INSERT INTO labdata ( uid,deleted, libstatus, author, notes, protocol, dateadd, url, genome_id, expereminttype_id  ) values', [], (err, rows, fields)=> {
+                        'INSERT INTO labdata SET ?', data[i] , (err, res)=> {
+                            if (err == null) {
+                                console.log('Added' + data.uid);
+                                resolve(res);
+                            } else {
+                                console.log(err);
+                                reject('nothing');
+                            }
+                        });
+                }
+                connection.release();
+                
             });
         });
     },

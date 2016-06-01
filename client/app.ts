@@ -30,20 +30,22 @@ import { APP_BASE_HREF } from '@angular/common';
 
 class Socially {
     public gross:Object = [];
+    public global_flag: Boolean = false;
     public output;
-    public drop;
+    public all_output;
 
     constructor(private check:LinkCheck) {
     }
-    onSelect(){
 
-    }
-
-    initialize(item,i,event,text) {
-        if (typeof this.gross.text == 'undefined') {
-            this.gross[text] = new Array();
+    select_all(event,output){
+        if(event.target.checked){
+            this.global_flag = true;
+            this.all_output = output;
+            console.log(output);
         }
-        return this.gross;
+        else{
+            this.global_flag = false;
+        }
     }
 
     getsra(id) {
@@ -58,13 +60,28 @@ class Socially {
     }
 
     Selected() {
-      console.log(this.gross);
-        this.Object_relevant_json(this.gross).then(value => {
-            console.log(value);
-            Meteor.call('insert', value , function(err,res) {
-                if (err) console.log(err);
+        if (this.global_flag == false){
+            console.log(this.gross);
+            this.Object_relevant_json(this.gross).then(value => {
+                console.log(value);
+                Meteor.call('insert', value , function(err,res) {
+                    if (err) console.log(err);
+                });
             });
-        });
+        }
+        else{
+            this.dump_all(this.all_output).then(value=>{
+                console.log(value);
+            });
+            //selecting all records in the same format
+        }
+    }
+
+    initialize(item,i,event,text) {
+        if (typeof this.gross.text == 'undefined') {
+            this.gross[text] = new Array();
+        }
+        return this.gross;
     }
 
     checkbox(item, i, event, text) {
@@ -74,12 +91,12 @@ class Socially {
         }
         console.log(item+i+event+text);
 
-        if (event.target.checked && i==i){
+        if (event.target.checked && i==i && this.global_flag == false){
             console.log(this.gross);
             this.gross[text][i] = item;
             console.log('added '+text+'_'+i);
         }
-        if (!event.target.checked && i==i){
+        if (!event.target.checked && i==i && this.global_flag == false){
             console.log(item+i+event+text);
             this.gross[text][i] = '';
             console.log('deleted '+text+'_'+i)
@@ -90,6 +107,7 @@ class Socially {
         return new Promise((resolve,reject)=>{
             var json = [];
             var l = Object.keys(obj).length;
+            //include function to determine the max of each array elements
             for (var i = 0; i<2; i++) {
                 json[i] = {
                     uid: this.uuid(),
@@ -99,7 +117,8 @@ class Socially {
                     notes: '',
                     cells: '',
                     conditions: '',
-                    protocol: obj.protocol[i], dateadd: new Date().toISOString().slice(0, 10),
+                    protocol: obj.protocol[i],
+                    dateadd: new Date().toISOString().slice(0, 10),
                     url: 'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/' + obj.run_accession[0].substring(0, 3) + '/' + obj.run_accession[0].substring(0, 6) + '/' + obj.run_accession[0] + '/' + obj.run_accession[0] + '.sra',
                     genome_id: 1,
                     experimenttype_id: 1
@@ -124,6 +143,32 @@ class Socially {
         return uuid.join('');
     }
 
+    dump_all(raw_data){
+        return new Promise((resolve,reject)=>{
+            var json = [];
+            var l= Object.keys(raw_data).length;
+            for (var i=0; i<l ; i++){
+                json[i] = {
+                    uid: this.uuid(),
+                    dateadd:new Date().toISOString().slice(0, 10),
+                    deleted: 0,
+                    libstatus: 0,
+                    author: 'bharath',
+                    notes: '',
+                    cells: '',
+                    conditions: '',
+                    protocol:raw_data[i].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL ,
+                    url: raw_data[i].RUN_SET.RUN.accession,
+                    genome_id:1,
+                    experimenttype_id: 1
+                };
+            }
+            Meteor.call('insert', json, function(err,res) {
+                if (err) console.log(err);
+            });
+            resolve(json);
+        });
+    }
 }
 // var arr = Object.keys(obj).map(function (key) {return obj[key]});
 bootstrap(Socially,[NO_SANITIZATION_PROVIDERS,LinkCheck, ROUTER_PROVIDERS, provide(APP_BASE_HREF, { useValue: '/' })]);

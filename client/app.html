@@ -21,7 +21,7 @@
     }
     div {
         border-radius: 5px;
-        background-color: #f2f2f2;
+        background-color: #e6e6e6;
         padding: 40px;
     }
     l {
@@ -35,7 +35,7 @@ SRA / SRX / SRP / GSE / GSM number
 <button (click)="getsra(sra.value)" id ='button1'>RETRIEVE</button>
 
 <ul *ngIf="output">
-    <input type = "checkbox" (change) = select_all($event)>
+    <input type = "checkbox" (change) = select_all($event,output)>
     SELECT ALL RECORDS
     <button class="button" (click) ="Selected()">SUBMIT TO DATABASE</button>
 </ul>
@@ -45,44 +45,45 @@ SRA / SRX / SRP / GSE / GSM number
     <tr *ngFor="let item of output; #i = index">
         <div class="field">
 
-            <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY, i, $event,'assay_type')">
+            <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY?.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY, i, $event,'assay_type')">
 
             <l>ASSAY TYPE: </l>{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY| displaypipe}}<br>
 
-            <input #{{item?.EXPERIMENT?.alias}} [ngModel] = 'item?.EXPERIMENT?.alias.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.alias, i, $event, 'bio_project')">
+            <input #{{item?.EXPERIMENT?.alias}} [ngModel] = 'item?.EXPERIMENT?.alias?.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.alias, i, $event, 'bio_project')">
 
             <l>BIOPROJECT: </l>{{item?.EXPERIMENT?.alias | displaypipe}}<br>
 
             <l>CENTRE NAME: </l>{{item?.EXPERIMENT?.center_name | displaypipe}}<br>
 
-            <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION, i, $event, 'lib_select')">
+            <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION?.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION, i, $event, 'lib_select')">
 
             <l>LIBRARY SELECTION: </l>{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_SELECTION | displaypipe}}<br>
 
             <l>LIBRARY SOURCE: </l>{{item?.EXPERIMENT?.DESIGN.LIBRARY_DESCRIPTOR?.LIBRARY_SOURCE | displaypipe}}<br>
 
-            <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT, i, $event, 'lib_layout')">
+            <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT?.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT, i, $event, 'lib_layout')">
 
             <l>LAYOUT: </l>{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT | displaypipe | layoutpipe}}<br>
 
-            <input #{{item?.RUN_SET?.RUN?.accession}} [ngModel] = 'item?.RUN_SET?.RUN?.accession.selected' type="checkbox" (change)="checkbox(item?.RUN_SET?.RUN?.accession, i, $event, 'run_accession')">
+            <input #{{item?.RUN_SET?.RUN?.accession}} [ngModel] = 'item?.RUN_SET?.RUN?.accession?.selected' type="checkbox" (change)="checkbox(item?.RUN_SET?.RUN?.accession, i, $event, 'run_accession')">
 
             <l>RUN ACCESSION: </l><a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 3)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(item?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{item.RUN_SET.RUN.accession | displaypipe}}</a>
             <br>
     <tr *ngFor="let value of item.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE; #j = index">
-        {{'STRAIN' + (j+1) + ': '}}{{value?.TAG + '_' + value?.VALUE}}<br> </tr>
+        {{value?.TAG+ ': '}}{{value?.TAG + '_' + value?.VALUE}}<br> </tr>
 
-    <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL, i, $event, 'protocol')">
+    <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL?.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL, i, $event, 'protocol')">
 
     <l>PROTOCOL: </l>{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}}<br>
 
-    <input #{{item?.Pool?.Member?.organism}} [ngModel] = 'item?.Pool?.Member?.organism.selected' type="checkbox" (change)="checkbox(item?.Pool?.Member?.organism, i, $event, 'organism')">
+    <input #{{item?.Pool?.Member?.organism}} [ngModel] = 'item?.Pool?.Member?.organism?.selected' type="checkbox" (change)="checkbox(item?.Pool?.Member?.organism, i, $event, 'organism')">
         <l>ORGANISM: </l>{{item?.Pool?.Member?.organism}} <br>
 
 
             <l> SUBMISSION ACCESSION: </l>{{item?.SUBMISSION?.accession}} <br>
                 <l>SUBMISSION ALIAS: </l>{{item?.SUBMISSION?.alias}} <br>
     </div>
+<br>
     </tr>
 </ul>
 
@@ -94,7 +95,7 @@ SRA / SRX / SRP / GSE / GSM number
         <input #{{output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY}} [ngModel] = 'output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY.selected' type="checkbox" (change)="checkbox(output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY, 0, $event,'assay_type')">
 
         <l>ASSAY TYPE: </l>{{output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_STRATEGY| displaypipe}}<br>
-        <input #{{output?.EXPERIMENT?.alias}} [ngModel] = 'output?.EXPERIMENT?.alias.selected' type="checkbox" (change)="checkbox(output?.EXPERIMENT?.alias, 0, $event, 'bio_project')">
+        <input #{{output?.EXPERIMENT?.alias}} [ngModel] = 'output?.EXPERIMENT?.alias?.selected' type="checkbox" (change)="checkbox(output?.EXPERIMENT?.alias, 0, $event, 'bio_project')">
 
         <l>BIOPROJECT: </l>{{output?.EXPERIMENT?.alias | displaypipe}}<br>
 
@@ -110,17 +111,17 @@ SRA / SRX / SRP / GSE / GSM number
 
         <l>LAYOUT: </l>{{output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_LAYOUT | displaypipe | layoutpipe}}<br>
 
-        <input #{{output?.RUN_SET?.RUN?.accession}} [ngModel] = 'output?.RUN_SET?.RUN?.accession.selected' type="checkbox" (change)="checkbox(output?.RUN_SET?.RUN?.accession, 0, $event, 'run_accession')">
+        <input #{{output?.RUN_SET?.RUN?.accession}} [ngModel] = 'output?.RUN_SET?.RUN?.accession?.selected' type="checkbox" (change)="checkbox(output?.RUN_SET?.RUN?.accession, 0, $event, 'run_accession')">
 
         <l>RUN ACCESSION: </l><a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'+(output?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 3)+'/'+(output?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(output?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(output?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{output?.RUN_SET.RUN.accession | displaypipe}}</a><br>
         <tr *ngFor="let value of output?.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE; #j = index">
-            {{'STRAIN' + (j+1) + ': '}}{{value?.TAG + '_' + value?.VALUE}}<br> </tr>
+            {{value?.TAG + ': '}}{{value?.VALUE}}<br> </tr>
 
         <input #{{output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}} [ngModel] = 'output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL?.selected' type="checkbox" (change)="checkbox(output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL, 0, $event, 'protocol')">
 
         <l>PROTOCOL: </l>{{output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}}<br>
 
-        <input #{{output?.Pool?.Member?.organism}} [ngModel] = 'output?.Pool?.Member?.organism.selected' type="checkbox" (change)="checkbox(output?.Pool?.Member?.organism, 0, $event, 'organism')">
+        <input #{{output?.Pool?.Member?.organism}} [ngModel] = 'output?.Pool?.Member?.organism?.selected' type="checkbox" (change)="checkbox(output?.Pool?.Member?.organism, 0, $event, 'organism')">
 
         <l>ORGANISM: </l>{{output?.Pool?.Member?.organism}} <br>
 
