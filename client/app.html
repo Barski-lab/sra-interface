@@ -70,7 +70,7 @@ SRA / SRX / SRP / GSE / GSM number
             <l>RUN ACCESSION: </l><a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 3)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(item?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{item.RUN_SET.RUN.accession | displaypipe}}</a>
             <br>
     <tr *ngFor="let value of item.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE; #j = index">
-        {{value?.TAG+ ': '}}{{value?.TAG + '_' + value?.VALUE}}<br> </tr>
+        {{value?.TAG+ ': '}}{{value?.VALUE}}<br> </tr>
 
     <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL?.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL, i, $event, 'protocol')">
 

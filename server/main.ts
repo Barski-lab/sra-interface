@@ -5,6 +5,7 @@ import {get_users} from './mysql.ts';
 
 var uuid = Npm.require('node-uuid');
 var Mysql = Npm.require('mysql');
+var Client = Npm.require('ftp');
 var genome, exp;
 var author = 'bharath';
 var value;
@@ -21,10 +22,7 @@ class main{
     public temp: Mongo.Cursor<Object>
 
 }
-Meteor.startup(() => {
-    Meteor.call('populate_genome');
-    Meteor.call('populate_exp');
-});
+Meteor.startup(() => {});
 
 Meteor.methods({
     'insert':function(data) {
@@ -34,11 +32,12 @@ Meteor.methods({
             pool.getConnection((err, connection) => {
                 console.log('ok');
                 for (var i= 0; i<data.length; i++){
+
                     connection.query(
                         //'INSERT INTO labdata ( uid,deleted, libstatus, author, notes, protocol, dateadd, url, genome_id, expereminttype_id  ) values', [], (err, rows, fields)=> {
                         'INSERT INTO labdata SET ?', data[i] , (err, res)=> {
                             if (err == null) {
-                                console.log('Added' + data.uid);
+                                console.log('Added' + data[i].uid);
                                 resolve(res);
                             } else {
                                 console.log(err);
@@ -48,6 +47,24 @@ Meteor.methods({
                 }
                 connection.release();
                 
+            });
+        });
+    },
+
+    'ftpcheck':function(path,filename){
+        return new Promise((resolve,reject)=>{
+            var c = new Client();
+            var path="/sra/sra-instant/reads/ByRun/sra/SRR/SRR001/SRR001000/";
+            var ftpServer = {
+                host:""
+            }
+            c.connect(ftpServer);
+            c.on( 'ready', function () {
+                c.list(path, function ( err, list ) {
+                    if ( err ) reject (err);
+                    resolve(list[0].name == filename);
+                });
+                c.end();
             });
         });
     },
@@ -76,7 +93,6 @@ Meteor.methods({
                         connection.release();
                         if (err == null && rows.length > 0) {
                             exp = rows;
-                            console.log(rows);
                             resolve(exp);
                         } else {
                             reject('nothing');
@@ -84,9 +100,6 @@ Meteor.methods({
                     });
             });
         });
-    },
-    'print_sample': function(data){
-        console.log(data);
     }
 });
 

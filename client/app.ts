@@ -13,8 +13,6 @@ import { Meteor } from 'meteor/meteor';
 import { ROUTER_PROVIDERS, ROUTER_DIRECTIVES, RouteConfig } from '@angular/router-deprecated';
 import { APP_BASE_HREF } from '@angular/common';
 
-
-
 @Component({
     selector: 'app',
     templateUrl: 'client/app.html',
@@ -27,13 +25,11 @@ import { APP_BASE_HREF } from '@angular/common';
 //     { path: '/', as: 'query', component: query},
 // ])
 
-
 class Socially {
     public gross:Object = [];
     public global_flag: Boolean = false;
     public output;
     public all_output;
-
     constructor(private check:LinkCheck) {
     }
 
@@ -73,6 +69,9 @@ class Socially {
             this.dump_all(this.all_output).then(value=>{
                 console.log(value);
             });
+            this.decide_exptypeid('RNA-Seq','PAIRED').then((o)=>{
+                console.log(o);
+            });
             //selecting all records in the same format
         }
     }
@@ -85,8 +84,10 @@ class Socially {
     }
 
     checkbox(item, i, event, text) {
+        console.log(event);
         if (typeof this.gross[text] == "undefined")
         {
+
             this.initialize(item, i, event, text);
         }
         console.log(item+i+event+text);
@@ -97,7 +98,6 @@ class Socially {
             console.log('added '+text+'_'+i);
         }
         if (!event.target.checked && i==i && this.global_flag == false){
-            console.log(item+i+event+text);
             this.gross[text][i] = '';
             console.log('deleted '+text+'_'+i)
         }
@@ -121,7 +121,7 @@ class Socially {
                     dateadd: new Date().toISOString().slice(0, 10),
                     url: 'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/' + obj.run_accession[0].substring(0, 3) + '/' + obj.run_accession[0].substring(0, 6) + '/' + obj.run_accession[0] + '/' + obj.run_accession[0] + '.sra',
                     genome_id: 1,
-                    experimenttype_id: 1
+                    experimenttype_id: this.decide_exptypeid(obj.assay_type[i])
                 };
             }
             resolve(json);
@@ -150,25 +150,54 @@ class Socially {
             for (var i=0; i<l ; i++){
                 json[i] = {
                     uid: this.uuid(),
-                    dateadd:new Date().toISOString().slice(0, 10),
+                    dateadd: new Date().toISOString().slice(0, 10),
                     deleted: 0,
                     libstatus: 0,
                     author: 'bharath',
                     notes: '',
                     cells: '',
                     conditions: '',
-                    protocol:raw_data[i].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL ,
-                    url: raw_data[i].RUN_SET.RUN.accession,
-                    genome_id:1,
-                    experimenttype_id: 1
+                    protocol: raw_data[i].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL,
+                    url: 'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/' + raw_data[i].RUN_SET.RUN.accession.substring(0, 3) + '/' + raw_data[i].RUN_SET.RUN.accession.substring(0, 6) + '/' + raw_data[i].RUN_SET.RUN.accession + '/' + raw_data[i].RUN_SET.RUN.accession + '.sra',
+                    genome_id: 1,
+                    experimenttype_id:1
                 };
+                // input for exptypeconsole.log(Object.keys(raw_data[i].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]);
             }
-            Meteor.call('insert', json, function(err,res) {
-                if (err) console.log(err);
-            });
+
+            // Meteor.call('insert', json, function(err,res) {
+            //     if (err) console.log(err);
+            // });
             resolve(json);
         });
     }
+
+    decide_exptypeid(assay_type,layout){
+        return new Promise((resolve,reject)=>{
+            Meteor.call('populate_exp',function(err,res){
+                if (err) reject(err);
+                var a = _.find(res, function(rw){
+                    if (layout == 'PAIRED'){
+                        return rw.etype == assay_type+' pair'
+                    }
+                    return rw.etype == assay_type});
+                resolve(a.id);
+            });
+        });
+    }
+
+    decide_celltype(strain_data){
+
+    }
+
+    notes_accum(){
+
+    }
+
+    decide_antibody(){
+
+    }
+
 }
 // var arr = Object.keys(obj).map(function (key) {return obj[key]});
 bootstrap(Socially,[NO_SANITIZATION_PROVIDERS,LinkCheck, ROUTER_PROVIDERS, provide(APP_BASE_HREF, { useValue: '/' })]);
