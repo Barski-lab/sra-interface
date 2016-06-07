@@ -127,11 +127,18 @@ Meteor.methods({
     
     // Inserts the antibody
     'insert_antibody': function(antibody){
-        console.log(antibody);
-        // return new Promise((resolve,reject)=>{
-        //     pool.getConnection((err,connection) => {
-        //     });
-        // });
+        return new Promise((resolve,reject)=>{
+            pool.getConnection((err,connection) => {
+                var string = "INSERT INTO antibody SET ?";
+                connection.query(string, antibody, (err,rows,fields) => {
+                    connection.release();
+                    if (err == null && rows.length > 0) {
+                    } else {
+                        reject('nothing');
+                    }
+                });
+            });
+        });
     },
     
     // Retrieves laboratory ID of a particular text

@@ -263,27 +263,36 @@ class Socially {
 
     // Returns antibody id if available or else adds the new antibody to database and returns it
     decide_antibody(raw_data){
+
         var that = this;
         //var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE
         // var ind = _.find(a, function(rw){
         //     if (rw.TAG == 'CHIP ANTIBODY'){return rw.VALUE}
         // });
         return new Promise ((resolve,reject) => {
+            if (raw_data.SAMPLE){
+                var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE;
+                var ind = _.find(a, function(rw){
+                    if (rw.TAG == 'CHIP ANTIBODY'){return rw.VALUE}
+                    else{ resolve ('')}
+                });
+                var raw = ind.VALUE;
+            }
             Meteor.call('antibody',function(err,res){
                 var antibody;
-                console.log(raw_data);
+                console.log(raw);
                 //resolve(res);
                 var res_id = _.find(res, function(elem){
-                   if (elem.antibody.toLowerCase() == raw_data.toLowerCase()){return elem.id}
+                   if (elem.antibody.toLowerCase() == raw.toLowerCase()){return elem.id}
                 });
                 if (res_id){resolve (res_id.id)}
                 else{
                     antibody = {
-                      antibody: raw_data,
+                      antibody: raw,
                         id: that.uuid()
                     };
                     Meteor.call('insert_antibody',antibody, function(err,res){
-
+                        resolve (antibody.id);
                     });
                 }
                 //console.log(res_id.id);
