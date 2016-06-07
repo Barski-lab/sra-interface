@@ -25,32 +25,34 @@ class main{
 Meteor.startup(() => {});
 
 Meteor.methods({
+    // Main insertion function
     'insert':function(data) {
         console.log(data);
         console.log('Ready to transfer data');
         return new Promise((resolve, reject)=> {
             pool.getConnection((err, connection) => {
                 console.log('ok');
-                for (var i= 0; i<data.length; i++){
-
+                data.forEach(function(listitem,index){
+                    console.log('ITERATION _'+index);
                     connection.query(
                         //'INSERT INTO labdata ( uid,deleted, libstatus, author, notes, protocol, dateadd, url, genome_id, expereminttype_id  ) values', [], (err, rows, fields)=> {
-                        'INSERT INTO labdata SET ?', data[i] , (err, res)=> {
+                        'INSERT IGNORE INTO labdata SET ?', data[index] , (err, res)=> {
                             if (err == null) {
-                                console.log('Added' + data[i].uid);
+                                console.log('Added' + data[index].uid);
                                 resolve(res);
                             } else {
                                 console.log(err);
                                 reject('nothing');
                             }
                         });
-                }
+                });
                 connection.release();
-                
+
             });
         });
     },
-
+    
+    // Checks for the ftp link. If active returns the link, if not returns just the SRR number
     'ftpcheck':function(path,filename){
         return new Promise((resolve,reject)=>{
             var c = new Client();
@@ -68,6 +70,8 @@ Meteor.methods({
             });
         });
     },
+    
+    // Retrieves the genome id
     'populate_genome':function(){
         return new Promise((resolve, reject)=> {
             pool.getConnection((err, connection) => {
@@ -85,6 +89,8 @@ Meteor.methods({
             });
         });
     },
+    
+    // Retrieves the experiement type id
     'populate_exp':function(){
         return new Promise((resolve, reject)=> {
             pool.getConnection((err, connection) => {
@@ -98,6 +104,66 @@ Meteor.methods({
                             reject('nothing');
                         }
                     });
+            });
+        });
+    },
+
+    // Retrieves the antibody id
+    'antibody': function(){
+        return new Promise((resolve, reject)=> {
+            pool.getConnection((err, connection) => {
+                connection.query(
+                    'SELECT id,antibody FROM antibody',[], (err, rows, fields)=> {
+                        connection.release();
+                        if (err == null && rows.length > 0) {
+                            resolve(rows);
+                        } else {
+                            reject('nothing');
+                        }
+                    });
+            });
+        });
+    },
+    
+    // Inserts the antibody
+    'insert_antibody': function(antibody){
+        console.log(antibody);
+        // return new Promise((resolve,reject)=>{
+        //     pool.getConnection((err,connection) => {
+        //     });
+        // });
+    },
+    
+    // Retrieves laboratory ID of a particular text
+    'search_labid' : function(text){
+        return new Promise((resolve,reject)=>{
+            pool.getConnection((err,connection) => {
+                var string = "SELECT id FROM laboratory WHERE name LIKE '%"+text+"%'";
+                connection.query(string, [], (err,rows,fields) => {
+                    connection.release();
+                    if (err == null && rows.length > 0) {
+                        resolve(rows);
+                    } else {
+                        reject('nothing');
+                    }
+                });
+            });
+        });
+    },
+    
+    // Retrieves the group_id of a particular text
+    'search_grpid' : function(text){
+        return new Promise((resolve,reject)=>{
+            pool.getConnection((err,connection) => {
+                var string = "SELECT id FROM egroup WHERE name LIKE '%"+text+"%'";
+                connection.query(string, [], (err,rows,fields) => {
+                    connection.release();
+                    if (err == null && rows.length > 0) {
+                        resolve(rows);
+                    } else {
+                        reject('nothing');
+                    }
+                });
             });
         });
     }

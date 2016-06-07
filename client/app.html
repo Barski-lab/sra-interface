@@ -30,15 +30,22 @@
 </style>
 
 
-SRA / SRX / SRP / GSE / GSM number
-<input type="text" name="sranum" #sra>
-<button (click)="getsra(sra.value)" id ='button1'>RETRIEVE</button>
+SRA / SRP / GSM / ERP number
+<input type="text" name="sranum" (keyup.enter)="getsra(sra.value)" #sra>
+Laboratory Name: (internal purpose)
+<input type="text" name = "lab_id" #lab>
+Group Name: (internal purpose)
+<input type="text" name = "group_id" #grp>
+<button (click)="getsra(sra.value, lab.value, grp.value)" id ='button1'>RETRIEVE</button>
 
-<ul *ngIf="output">
+
+
+<tr *ngIf="output">
     <input type = "checkbox" (change) = select_all($event,output)>
+
     SELECT ALL RECORDS
-    <button class="button" (click) ="Selected()">SUBMIT TO DATABASE</button>
-</ul>
+<button class="button" (click) ="Selected()">SUBMIT TO DATABASE</button>
+</tr>
 <!--Displaying input-->
 
 <ul *ngIf="output?.length >1 ">
@@ -70,7 +77,7 @@ SRA / SRX / SRP / GSE / GSM number
             <l>RUN ACCESSION: </l><a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 3)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(item?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{item.RUN_SET.RUN.accession | displaypipe}}</a>
             <br>
     <tr *ngFor="let value of item.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE; #j = index">
-        {{value?.TAG+ ': '}}{{value?.VALUE}}<br> </tr>
+    <l>{{value?.TAG+ ': ' | uppercase}}</l>{{value?.VALUE}}<br> </tr>
 
     <input #{{item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}} [ngModel] = 'item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL?.selected' type="checkbox" (change)="checkbox(item?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL, i, $event, 'protocol')">
 
@@ -115,7 +122,7 @@ SRA / SRX / SRP / GSE / GSM number
 
         <l>RUN ACCESSION: </l><a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'+(output?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 3)+'/'+(output?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(output?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(output?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{output?.RUN_SET.RUN.accession | displaypipe}}</a><br>
         <tr *ngFor="let value of output?.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE; #j = index">
-            {{value?.TAG + ': '}}{{value?.VALUE}}<br> </tr>
+            <l>{{value?.TAG + ': ' | uppercase}}</l>{{value?.VALUE}}<br> </tr>
 
         <input #{{output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL}} [ngModel] = 'output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL?.selected' type="checkbox" (change)="checkbox(output?.EXPERIMENT?.DESIGN?.LIBRARY_DESCRIPTOR?.LIBRARY_CONSTRUCTION_PROTOCOL, 0, $event, 'protocol')">
 
