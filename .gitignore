@@ -1,7 +1,6 @@
 node_modules/
 private/
 .idea/
-.meteor/
 .gitignore/
 .DS_Store/
 server/config.ts
