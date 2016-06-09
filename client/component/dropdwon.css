@@ -1,0 +1,32 @@
+body
+{
+    background-repeat:repeat-x;
+}
+.ex
+{
+    margin:auto;
+    width:90%;
+    padding:10px;
+    border:outset;
+}
+select
+{
+    display:inline;
+    cursor:pointer;
+}
+.ey
+{
+    display:inline;
+}
+.gap
+{
+    clear:both;
+    margin-bottom:2px;
+}
+hideoption
+{
+    display:none;
+    visibility:hidden;
+    height:0;
+    font-size:0;
+}

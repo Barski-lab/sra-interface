@@ -29,14 +29,13 @@
     }
 </style>
 
+<ui-form></ui-form>
+
+
 
 SRA / SRP / GSM / ERP number
 <input type="text" name="sranum" (keyup.enter)="getsra(sra.value)" #sra>
-Laboratory Name: (internal purpose)
-<input type="text" name = "lab_id" #lab>
-Group Name: (internal purpose)
-<input type="text" name = "group_id" #grp>
-<button (click)="getsra(sra.value, lab.value, grp.value)" id ='button1'>RETRIEVE</button>
+<button (click)="getsra(sra.value)" id ='button1'>RETRIEVE</button>
 
 
 

@@ -8,24 +8,22 @@ import { LinkPipe } from "./link.pipe.ts";
 import { NO_SANITIZATION_PROVIDERS } from './sanity';
 import { IsArray } from "./isarray";
 import { LayoutPipe } from "./layout.pipe.ts";
-import { LinkCheck } from "./linkcheck.service";
 import { Meteor } from 'meteor/meteor';
 import { ROUTER_PROVIDERS, ROUTER_DIRECTIVES, RouteConfig } from '@angular/router-deprecated';
 import { APP_BASE_HREF } from '@angular/common';
 import {isArray} from "@angular/platform-browser/src/facade/lang";
+import {DropdownComponent} from './component/dropdown.component';
 
 @Component({
     selector: 'app',
     templateUrl: 'client/app.html',
     pipes: [DisplayPipe, LinkPipe, IsArray, LayoutPipe],
-    providers:[LinkCheck],
-    directives: [ROUTER_DIRECTIVES]
+    directives: [ROUTER_DIRECTIVES, DropdownComponent]
 })
 
 // @RouteConfig([
 //     { path: '/', as: 'query', component: query},
 // ])
-
 class Socially {
     public gross:Object = [];
     public global_flag: Boolean = false;
@@ -33,21 +31,14 @@ class Socially {
     public all_output;
     public lab_id;
     public grp_id;
-    constructor() {}
+    public service
+    constructor(service:DropdownComponent) {
+        this.service = service;
+    }
 
     //Display the SRA details
-    getsra(id, lab_id,grp_id) {
-        var that = this;
-        //TEMP ARRANGEMENTS
-        Meteor.call('search_labid',lab_id, function(err,res){
-            if (res != ''){ that.lab_id = res[0].id }
-
-        });
-        Meteor.call('search_grpid',grp_id, function(err,res){
-            if (res != ''){ that.grp_id = res[0].id }
-
-        });
-        // TEMP
+    getsra(id) {
+        console.log(this.service.value())
         console.log('Clicked');
         return new Promise((resolve,reject) => {
             sra(id).then((res)=>{
@@ -84,11 +75,6 @@ class Socially {
         else{
             this.dump_all(this.all_output).then(value=>{});
 
-            // Just trial function!!
-            this.decide_antibody('mouse anti-Smad2/3 antibody').then(value => {
-                //mouse anti-Smad2/3 antibody
-                console.log(value);
-            });
         }
     }
 
@@ -145,7 +131,7 @@ class Socially {
     }
     // Generate UUID
     uuid() {
-    var chars = '0123456789abcdef'.split('');
+    var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     var uuid = [], rnd = Math.random, r;
     uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
     uuid[14] = '4'; // version 4
@@ -167,28 +153,33 @@ class Socially {
             var l= Object.keys(raw_data).length;
             raw_data.forEach(function(listitem,index){
                  json[index] = {
-                    uid: that.uuid(),
+                     cells: that.decide_celltype(raw_data[index]),
+                     conditions: that.decide_celltype(raw_data[index]),
+                     uid: that.uuid(),
                     dateadd: new Date().toISOString().slice(0, 10),
                     deleted: 0,
                     libstatus: 0,
                     author: 'bharath',
                     notes: that.notes_accum(raw_data[index]),
                     cells: that.decide_celltype(raw_data[index]),
-                    conditions: '',
                     protocol: raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL,
                     laboratory_id: that.lab_id,
                     egroup_id: that.grp_id,
                     url: that.check_runaccession(raw_data[index]),
+                     name4browser: that.decide_celltype(raw_data[index]),
                     genome_id: 1,
                  };
                 that.decide_exptypeid(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY,Object.keys(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]).then(value => {
                     json[index].experimenttype_id = value;
                 });
+                // that.check_runaccession(raw_data).then(value=>{
+                //     json[index].url = value;
+                // });
                 // input for exptypeconsole.log(Object.keys(raw_data[i].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]);
             });
-            // Meteor.call('insert', json, function(err,res) {
-            //     if (err) console.log(err);
-            // });
+            Meteor.call('insert', json, function(err,res) {
+                if (err) console.log(err);
+            });
             resolve(json);
         });
     }
@@ -217,7 +208,35 @@ class Socially {
 
     // Returns URL to download SRR.SRA files
     check_runaccession(raw_data){
+        console.log('Cheking Run-accession');
         var adv=[];
+        // return new Promise ((resolve,reject) => {
+        //     if (!isArray(raw_data.RUN_SET.RUN)){
+        //         var path = 'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'
+        //             + raw_data.RUN_SET.RUN.accession.substring(0, 3) + '/'
+        //             + raw_data.RUN_SET.RUN.accession.substring(0, 6) + '/'
+        //             + raw_data.RUN_SET.RUN.accession + '/' + raw_data.RUN_SET.RUN.accession + '.sra';
+        //         var filename = raw_data.RUN_SET.RUN.accession+'.sra';
+        //         Meteor.call('ftpcheck',path,filename, function(err,res){
+        //             if (err) {reject(err)}
+        //             if (res == true){resolve (path)}
+        //             else {resolve(filename)}
+        //         });
+        //     }
+        //     else{
+        //         raw_data.RUN_SET.RUN.forEach(function(item,index){
+        //             var path = 'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/' + item.accession.substring(0, 3) + '/' + item.accession.substring(0, 6) + '/' + item.accession + '/' + item.accession + '.sra';
+        //             var filename = item.accession + '.sra';
+        //             Meteor.call('ftpcheck',path,filename, function(err,res){
+        //                 if (err) {reject(err)}
+        //                 if (res == true){adv.push(filename)}
+        //                 else {adv.push(path)}
+        //             });
+        //             resolve(adv.join(';'));
+        //         });
+        //     }
+        //
+        // });
         if (!isArray(raw_data.RUN_SET.RUN)){
             return 'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'
                 + raw_data.RUN_SET.RUN.accession.substring(0, 3) + '/'
@@ -242,7 +261,7 @@ class Socially {
             }
         });
         if (ind){return(ind.VALUE)}
-        else {return ('')}
+        else {return (raw_data.RUN_SET.RUN.accession)}
     }
 
     //Returns the notes - accumulation of relevant details that is not entered into wardrobe
@@ -302,4 +321,4 @@ class Socially {
     }
 }
 // var arr = Object.keys(obj).map(function (key) {return obj[key]});
-bootstrap(Socially,[NO_SANITIZATION_PROVIDERS,LinkCheck, ROUTER_PROVIDERS, provide(APP_BASE_HREF, { useValue: '/' })]);
+bootstrap(Socially,[NO_SANITIZATION_PROVIDERS, DropdownComponent, ROUTER_PROVIDERS, provide(APP_BASE_HREF, { useValue: '/' })]);

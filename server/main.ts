@@ -1,22 +1,18 @@
 import { Meteor } from 'meteor/meteor';
 import {Observable} from 'rxjs';
 import { Mongo } from 'meteor/mongo';
-import {get_users} from './mysql.ts';
+import { config } from '../private/config';
 
-var uuid = Npm.require('node-uuid');
+
+
 var Mysql = Npm.require('mysql');
 var Client = Npm.require('ftp');
+
 var genome, exp;
 var author = 'bharath';
 var value;
 
-var pool = Mysql.createPool({
-    host:"localhost",
-    user: "root",
-    password: "chandran96",
-    database: "ems",
-    port: "3306"
-});
+var pool = Mysql.createPool(config);
 
 class main{
     public temp: Mongo.Cursor<Object>
@@ -36,7 +32,7 @@ Meteor.methods({
                     console.log('ITERATION _'+index);
                     connection.query(
                         //'INSERT INTO labdata ( uid,deleted, libstatus, author, notes, protocol, dateadd, url, genome_id, expereminttype_id  ) values', [], (err, rows, fields)=> {
-                        'INSERT IGNORE INTO labdata SET ?', data[index] , (err, res)=> {
+                        'INSERT INTO labdata SET ?', data[index] , (err, res)=> {
                             if (err == null) {
                                 console.log('Added' + data[index].uid);
                                 resolve(res);
@@ -142,13 +138,14 @@ Meteor.methods({
     },
     
     // Retrieves laboratory ID of a particular text
-    'search_labid' : function(text){
+    'search_labid' : function(){
         return new Promise((resolve,reject)=>{
             pool.getConnection((err,connection) => {
-                var string = "SELECT id FROM laboratory WHERE name LIKE '%"+text+"%'";
+                var string = "SELECT id,name  FROM laboratory";
                 connection.query(string, [], (err,rows,fields) => {
                     connection.release();
                     if (err == null && rows.length > 0) {
+                        //console.log(rows)
                         resolve(rows);
                     } else {
                         reject('nothing');
@@ -162,8 +159,8 @@ Meteor.methods({
     'search_grpid' : function(text){
         return new Promise((resolve,reject)=>{
             pool.getConnection((err,connection) => {
-                var string = "SELECT id FROM egroup WHERE name LIKE '%"+text+"%'";
-                connection.query(string, [], (err,rows,fields) => {
+                var string = "SELECT egroup.id,egroup.name FROM egroup, laboratory WHERE laboratory.id ='" +text+ "'AND laboratory.id=egroup.laboratory_id";
+                connection.query(string,[], (err,rows,fields) => {
                     connection.release();
                     if (err == null && rows.length > 0) {
                         resolve(rows);
@@ -174,6 +171,7 @@ Meteor.methods({
             });
         });
     }
+
 });
 
 
