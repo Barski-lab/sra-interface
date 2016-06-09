@@ -163,7 +163,7 @@ class Socially {
                 // that.decide_exptypeid(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY,Object.keys(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]).then(value => {
                 //     json[index].experimenttype_id = value;
                 // });
-               arr[index] = that.decide_antibody(raw_data[index]).then(value =>{
+               arr[0] = that.decide_antibody(raw_data[index]).then(value =>{
                    console.log('1');
                     json[index] = {
                         cells: that.decide_celltype(raw_data[index]),
@@ -180,15 +180,18 @@ class Socially {
                         egroup_id: that.grp_id,
                         url: that.check_runaccession(raw_data[index]),
                         name4browser: raw_data[index].RUN_SET.RUN.accession,
-                        genome_id: 1,
+                        genome_id: 10,
                         antibody_id:value,
                         download_id:2
                     };
                     console.log(json);
                     //SWITCH TO TRANSPORT DATA
 
-
                 });
+                arr[1] = that.decide_exptypeid(raw_data[index]).then(value =>{
+                    json[index].experimenttype_id = value;
+                });
+
                 // that.check_runaccession(raw_data).then(value=>{
                 //     json[index].url = value;
                 // });
@@ -206,7 +209,9 @@ class Socially {
     }
 
     // Returns Type of the experiment RNA-Seq or DNA-Seq Single or Paired
-    decide_exptypeid(assay_type,layout){
+    decide_exptypeid(raw_data){
+        var assay_type = raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY;
+        var layout = Object.keys(raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0];
         return new Promise((resolve,reject)=>{
             Meteor.call('populate_exp',function(err,res){
                 if (err) reject(err);
