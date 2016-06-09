@@ -75,7 +75,8 @@ class Socially {
             });
         }
         else{
-            this.dump_all(this.all_output).then(value=> {
+            this.dump_all(this.all_output).then(value => {
+                console.log(this.all_output)
                 console.log(value + ' Records added')
             });
 
@@ -202,6 +203,7 @@ class Socially {
 
          console.log('2');
          Meteor.call('insert', json, function(err,res) {
+
          if (err) console.log(err);
      });
          return json.length;
@@ -304,7 +306,7 @@ class Socially {
 
     //Returns the notes - accumulation of relevant details that is not entered into wardrobe
     notes_accum(raw_data){
-        var a,b,c,d;
+        var a,b,c,d,e,f,g;
 
         if (raw_data.EXPERIMENT.alias){
             a = 'BIOPROJECT:' + raw_data.EXPERIMENT.alias}
@@ -313,9 +315,18 @@ class Socially {
         if (raw_data.Pool.Member.organism){
             c = '\n<br> ORGANISM:' +raw_data.Pool.Member.organism}
         if (raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY){
-            d = '\n<br> ASSAY TYPE' +raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY;
+            d = '\n<br> ASSAY TYPE:' +raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY;
         }
-        return (a+b+c+d);
+        if(raw_data.STUDY.DESCRIPTOR.CENTER_PROJECT_NAME){
+            e = '\n<br> CENTER PROJECT NAME:' +raw_data.STUDY.DESCRIPTOR.CENTER_PROJECT_NAME;
+        }
+        if(raw_data.STUDY.DESCRIPTOR.STUDY_TITLE){
+            f = '\n<br><br> STUDY TITLE:' +raw_data.STUDY.DESCRIPTOR.STUDY_TITLE;
+        }
+        if (raw_data.STUDY.DESCRIPTOR.STUDY_ABSTRACT){
+            g = '\n<br><br> STUDY ABSTRACT:' +raw_data.STUDY.DESCRIPTOR.STUDY_ABSTRACT;
+        }
+        return (a+b+c+d+e+f+g);
     }
 
     // Returns antibody id if available or else adds the new antibody to database and returns it
