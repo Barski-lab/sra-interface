@@ -4,7 +4,7 @@ private/
 .meteor/
 .gitignore/
 .DS_Store/
-private/config.ts
+server/config.ts
 .vagrant
 .DS_Store
 

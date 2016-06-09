@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import {Observable} from 'rxjs';
 import { Mongo } from 'meteor/mongo';
-import { config } from '../private/config'
+import { config } from './config'
 
 
 
@@ -23,7 +23,7 @@ Meteor.startup(() => {});
 Meteor.methods({
     // Main insertion function
     'insert':function(data) {
-        console.log(data);
+        console.log(data.antibody_id);
         console.log('Ready to transfer data');
         return new Promise((resolve, reject)=> {
             pool.getConnection((err, connection) => {
@@ -33,6 +33,7 @@ Meteor.methods({
                     connection.query(
                         //'INSERT INTO labdata ( uid,deleted, libstatus, author, notes, protocol, dateadd, url, genome_id, expereminttype_id  ) values', [], (err, rows, fields)=> {
                         'INSERT INTO labdata SET ?', data[index] , (err, res)=> {
+                            console.log(data[index]);
                             if (err == null) {
                                 console.log('Added' + data[index].uid);
                                 resolve(res);

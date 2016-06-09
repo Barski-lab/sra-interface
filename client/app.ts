@@ -75,8 +75,10 @@ class Socially {
             });
         }
         else{
-            this.dump_all(this.all_output).then(value=>{});
-            
+            this.dump_all(this.all_output).then(value=> {
+                console.log(value + ' Records added')
+            });
+
 
         }
     }
@@ -151,45 +153,56 @@ class Socially {
     // Sending all data to Database
     dump_all(raw_data){
         var that = this;
-        return new Promise((resolve,reject)=>{
-            var json = [];
-            var l= Object.keys(raw_data).length;
-            raw_data.forEach(function(listitem,index){
-                 json[index] = {
-                     cells: that.decide_celltype(raw_data[index]),
-                     conditions: that.decide_conditions(raw_data[index]),
-                     uid: that.uuid(),
-                    dateadd: new Date().toISOString().slice(0, 10),
-                    deleted: 0,
-                    libstatus: 0,
-                    author: 'bharath',
-                    notes: that.notes_accum(raw_data[index]),
-                    cells: that.decide_celltype(raw_data[index]),
-                    protocol: raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL,
-                    laboratory_id: that.lab_id,
-                    egroup_id: that.grp_id,
-                    url: that.check_runaccession(raw_data[index]),
-                     name4browser: that.decide_celltype(raw_data[index]),
-                    genome_id: 1,
-                 };
-                that.decide_exptypeid(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY,Object.keys(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]).then(value => {
-                    json[index].experimenttype_id = value;
-                });
-                that.decide_antibody(raw_data[index]).then(value =>{
-                    json[index].antibody = value;
+
+
+
+
+            var arr = [];
+        var json = [];
+            raw_data.forEach((listitem,index) => {
+                // that.decide_exptypeid(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY,Object.keys(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]).then(value => {
+                //     json[index].experimenttype_id = value;
+                // });
+               arr[index] = that.decide_antibody(raw_data[index]).then(value =>{
+                   console.log('1');
+                    json[index] = {
+                        cells: that.decide_celltype(raw_data[index]),
+                        conditions: that.decide_conditions(raw_data[index]),
+                        uid: that.uuid(),
+                        dateadd: new Date().toISOString().slice(0, 10),
+                        deleted: 0,
+                        libstatus: 0,
+                        author: 'Bharath Manica Vasagam',
+                        notes: that.notes_accum(raw_data[index]),
+                        cells: that.decide_celltype(raw_data[index]),
+                        protocol: raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL,
+                        laboratory_id: that.lab_id,
+                        egroup_id: that.grp_id,
+                        url: that.check_runaccession(raw_data[index]),
+                        name4browser: raw_data[index].RUN_SET.RUN.accession,
+                        genome_id: 1,
+                        antibody_id:value,
+                        download_id:2
+                    };
+                    console.log(json);
+                    //SWITCH TO TRANSPORT DATA
+
+
                 });
                 // that.check_runaccession(raw_data).then(value=>{
                 //     json[index].url = value;
                 // });
                 // input for exptypeconsole.log(Object.keys(raw_data[i].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]);
             });
-            console.log(json);
-            //SWITCH TO TRANSPORT DATA
-            // Meteor.call('insert', json, function(err,res) {
-            //     if (err) console.log(err);
-            // });
-            resolve(json);
-        });
+
+     return Promise.all(arr).then(()=>{
+
+         console.log('2');
+         Meteor.call('insert', json, function(err,res) {
+         if (err) console.log(err);
+     });
+         return json.length;
+     });
     }
 
     // Returns Type of the experiment RNA-Seq or DNA-Seq Single or Paired
@@ -291,11 +304,11 @@ class Socially {
         if (raw_data.EXPERIMENT.alias){
             a = 'BIOPROJECT:' + raw_data.EXPERIMENT.alias}
         if (raw_data.SUBMISSION.alias){
-            b = '\n SUBMISSION ALIAS:'+raw_data.SUBMISSION.alias}
+            b = '\n<br> SUBMISSION ALIAS:'+raw_data.SUBMISSION.alias}
         if (raw_data.Pool.Member.organism){
-            c = '\n ORGANISM:' +raw_data.Pool.Member.organism}
+            c = '\n<br> ORGANISM:' +raw_data.Pool.Member.organism}
         if (raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY){
-            d = '\n ASSAY TYPE' +raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY;
+            d = '\n<br> ASSAY TYPE' +raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY;
         }
         return (a+b+c+d);
     }
@@ -314,11 +327,9 @@ class Socially {
                         }
                     });
                     if (ind) {
-                        console.log(ind.VALUE.split('anti-')[1].split('(')[0].split('')[0]);
                         var raw =ind.VALUE.split('anti-')[1].split('(')[0].split(' ')[0];
                         //var raw = 'H3K27me3'
                         var index = res.findIndex(x => x.antibody.toLowerCase() == raw.toLowerCase());
-                        console.log(index)
                         if(index != -1){resolve(res[index].id)}
                             //This is the id of N/A antibody
                         else {resolve('antibody-0000-0000-0000-000000000001')}
@@ -329,6 +340,7 @@ class Socially {
 
             });
         });
+
 
         // This function was written to include the UNAVAILABLE anitbody into antibody table
         // Meteor.call('antibody',function(err,res){
@@ -353,6 +365,11 @@ class Socially {
         // });
 
     }
+    // get_antibody_sync(raw_data){
+    //     var output;
+    //     this.decide_antibody(raw_data).then(value =>{
+    //     });
+    // }
 }
 // var arr = Object.keys(obj).map(function (key) {return obj[key]});
 bootstrap(Socially,[NO_SANITIZATION_PROVIDERS, DropdownComponent, ROUTER_PROVIDERS, provide(APP_BASE_HREF, { useValue: '/' })]);
