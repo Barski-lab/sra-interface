@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import {Observable} from 'rxjs';
 import { Mongo } from 'meteor/mongo';
-import { config } from './config'
+import { config } from '../private/config'
 
 
 

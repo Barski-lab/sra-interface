@@ -76,6 +76,7 @@ class Socially {
         }
         else{
             this.dump_all(this.all_output).then(value=>{});
+            
 
         }
     }
@@ -156,7 +157,7 @@ class Socially {
             raw_data.forEach(function(listitem,index){
                  json[index] = {
                      cells: that.decide_celltype(raw_data[index]),
-                     conditions: that.decide_celltype(raw_data[index]),
+                     conditions: that.decide_conditions(raw_data[index]),
                      uid: that.uuid(),
                     dateadd: new Date().toISOString().slice(0, 10),
                     deleted: 0,
@@ -174,14 +175,19 @@ class Socially {
                 that.decide_exptypeid(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY,Object.keys(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]).then(value => {
                     json[index].experimenttype_id = value;
                 });
+                that.decide_antibody(raw_data[index]).then(value =>{
+                    json[index].antibody = value;
+                });
                 // that.check_runaccession(raw_data).then(value=>{
                 //     json[index].url = value;
                 // });
                 // input for exptypeconsole.log(Object.keys(raw_data[i].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]);
             });
-            Meteor.call('insert', json, function(err,res) {
-                if (err) console.log(err);
-            });
+            console.log(json);
+            //SWITCH TO TRANSPORT DATA
+            // Meteor.call('insert', json, function(err,res) {
+            //     if (err) console.log(err);
+            // });
             resolve(json);
         });
     }
@@ -258,7 +264,19 @@ class Socially {
         //item.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE
         var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE
         var ind = _.find(a, function(rw){
-            if (rw.TAG == 'cell_type'){
+            if (rw.TAG == 'source_name'){
+                return rw.VALUE
+            }
+        });
+        if (ind){return(ind.VALUE)}
+        else {return (raw_data.RUN_SET.RUN.accession)}
+    }
+
+    decide_conditions(raw_data){
+        //item.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE
+        var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE
+        var ind = _.find(a, function(rw){
+            if (rw.TAG == 'treatment'){
                 return rw.VALUE
             }
         });
@@ -283,43 +301,57 @@ class Socially {
     }
 
     // Returns antibody id if available or else adds the new antibody to database and returns it
-    decide_antibody(raw_data){
-
-        var that = this;
-        //var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE
-        // var ind = _.find(a, function(rw){
-        //     if (rw.TAG == 'CHIP ANTIBODY'){return rw.VALUE}
-        // });
-        return new Promise ((resolve,reject) => {
-            if (raw_data.SAMPLE){
-                var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE;
-                var ind = _.find(a, function(rw){
-                    if (rw.TAG == 'CHIP ANTIBODY'){return rw.VALUE}
-                    else{ resolve ('')}
-                });
-                var raw = ind.VALUE;
-            }
-            Meteor.call('antibody',function(err,res){
-                var antibody;
-                console.log(raw);
-                //resolve(res);
-                var res_id = _.find(res, function(elem){
-                   if (elem.antibody.toLowerCase() == raw.toLowerCase()){return elem.id}
-                });
-                if (res_id){resolve (res_id.id)}
-                else{
-                    antibody = {
-                      antibody: raw,
-                        id: that.uuid()
-                    };
-                    Meteor.call('insert_antibody',antibody, function(err,res){
-                        resolve (antibody.id);
+    decide_antibody(raw_data) {
+        return new Promise((resolve, reject) => {
+            console.log('Check antibody')
+            Meteor.call('antibody', function (err, res) {
+                if (err) {reject(err)}
+                else {
+                    var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE;
+                    var ind = _.find(a, function (rw) {
+                        if (rw.TAG == 'chip antibody' & rw.VALUE != 'no antibody') {
+                            return rw.VALUE
+                        }
                     });
+                    if (ind) {
+                        console.log(ind.VALUE.split('anti-')[1].split('(')[0].split('')[0]);
+                        var raw =ind.VALUE.split('anti-')[1].split('(')[0].split(' ')[0];
+                        //var raw = 'H3K27me3'
+                        var index = res.findIndex(x => x.antibody.toLowerCase() == raw.toLowerCase());
+                        console.log(index)
+                        if(index != -1){resolve(res[index].id)}
+                            //This is the id of N/A antibody
+                        else {resolve('antibody-0000-0000-0000-000000000001')}
+                    } else {
+                        resolve('antibody-0000-0000-0000-000000000001')
+                    }
                 }
-                //console.log(res_id.id);
-                //console.log(res);
+
             });
         });
+
+        // This function was written to include the UNAVAILABLE anitbody into antibody table
+        // Meteor.call('antibody',function(err,res){
+        //     var antibody;
+        //     console.log(raw);
+        //     //resolve(res);
+        //     var res_id = _.find(res, function(elem){
+        //        if (elem.antibody.toLowerCase() == raw.toLowerCase()){return elem.id}
+        //     });
+        //     if (res_id){resolve (res_id.id)}
+        //     else{
+        //         antibody = {
+        //           antibody: raw,
+        //             id: that.uuid()
+        //         };
+        //         Meteor.call('insert_antibody',antibody, function(err,res){
+        //             resolve (antibody.id);
+        //         });
+        //     }
+        //     //console.log(res_id.id);
+        //     //console.log(res);
+        // });
+
     }
 }
 // var arr = Object.keys(obj).map(function (key) {return obj[key]});

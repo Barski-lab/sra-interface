@@ -4,3 +4,15 @@ private/
 .meteor/
 .gitignore/
 .DS_Store/
+private/config.ts
+.vagrant
+.DS_Store
+
+
+#JetBrain
+.idea
+
+/typings/browser.d.ts
+/typings/main
+/typings/main.d.ts
+/typings/browser
