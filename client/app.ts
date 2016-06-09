@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import 'zone.js/dist/zone';
-import { Component, provide, OnInit} from '@angular/core';
+import { Component, provide, Input} from '@angular/core';
 import { bootstrap } from '@angular/platform-browser-dynamic';
 import { sra } from '../client/sra';
 import { DisplayPipe } from './display.pipe.ts';
@@ -31,14 +31,16 @@ class Socially {
     public all_output;
     public lab_id;
     public grp_id;
-    public service
-    constructor(service:DropdownComponent) {
-        this.service = service;
-    }
 
+    // @Input() grp_id = this.service.selected_lab_id;
+    constructor() {
+      
+    }
+  
     //Display the SRA details
-    getsra(id) {
-        console.log(this.service.value())
+    getsra(id,lab_id,grp_id) {
+        this.lab_id = lab_id;
+        this.grp_id = grp_id;
         console.log('Clicked');
         return new Promise((resolve,reject) => {
             sra(id).then((res)=>{

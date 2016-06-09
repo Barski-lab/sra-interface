@@ -1,4 +1,4 @@
-import {Component} from '@angular/core'
+import {Component, Output} from '@angular/core'
 import { Meteor } from 'meteor/meteor';
 import 'reflect-metadata';
 import 'zone.js/dist/zone';
@@ -38,6 +38,7 @@ import {Injectable} from '@angular/core'
 
 @Injectable()
 export class DropdownComponent{
+
 
 
     public lab;
@@ -99,9 +100,6 @@ export class DropdownComponent{
     selected_grp(value){
         console.log(value.split('__')[1]);
         this.selected_grp_id = value.split('__')[1]
-    }
-    value(){
-        return (this.selected_grp_id)
     }
 
 }
