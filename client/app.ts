@@ -24,6 +24,7 @@ import {DropdownComponent} from './component/dropdown.component';
 // @RouteConfig([
 //     { path: '/', as: 'query', component: query},
 // ])
+
 class Socially {
     public gross:Object = [];
     public global_flag: Boolean = false;
@@ -32,10 +33,7 @@ class Socially {
     public lab_id;
     public grp_id;
 
-    // @Input() grp_id = this.service.selected_lab_id;
-    constructor() {
-      
-    }
+    constructor() {}
   
     //Display the SRA details
     getsra(id,lab_id,grp_id) {
@@ -46,6 +44,7 @@ class Socially {
             sra(id).then((res)=>{
                 this.output = res.Record;
                 resolve(this.output);
+                console.log(this.output);
                 console.log('Retrieved');
             });
         });
@@ -76,8 +75,9 @@ class Socially {
         }
         else{
             this.dump_all(this.all_output).then(value => {
-                console.log(this.all_output)
-                console.log(value + ' Records added')
+                //console.log(value.a)
+                console.log(value.a.length + ' Records added')
+                console.log(value.b-value.a.length + ' Records Deleted because it is not either DNA or RNA Seq')
             });
 
 
@@ -154,59 +154,51 @@ class Socially {
     // Sending all data to Database
     dump_all(raw_data){
         var that = this;
-
-
-
-
-            var arr = [];
+        var arr = [];
         var json = [];
-            raw_data.forEach((listitem,index) => {
-                // that.decide_exptypeid(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY,Object.keys(raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]).then(value => {
-                //     json[index].experimenttype_id = value;
-                // });
-               arr[0] = that.decide_antibody(raw_data[index]).then(value =>{
-                   console.log('1');
-                    json[index] = {
-                        cells: that.decide_celltype(raw_data[index]),
-                        conditions: that.decide_conditions(raw_data[index]),
-                        uid: that.uuid(),
-                        dateadd: new Date().toISOString().slice(0, 10),
-                        deleted: 0,
-                        libstatus: 0,
-                        author: 'Bharath Manica Vasagam',
-                        notes: that.notes_accum(raw_data[index]),
-                        cells: that.decide_celltype(raw_data[index]),
-                        protocol: raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL,
-                        laboratory_id: that.lab_id,
-                        egroup_id: that.grp_id,
-                        url: that.check_runaccession(raw_data[index]),
-                        name4browser: raw_data[index].RUN_SET.RUN.accession,
-                        genome_id: 10,
-                        antibody_id:value,
-                        download_id:2
+        raw_data.forEach((listitem,index) => {
+            arr[0] = that.decide_antibody(raw_data[index]).then(value =>{
+                console.log(value)
+                json[index] = {
+                    experimenttype_id:'',
+                    cells: that.decide_celltype(raw_data[index]),
+                    conditions: that.decide_conditions(raw_data[index]),
+                    uid: that.uuid(),
+                    dateadd: new Date().toISOString().slice(0, 10),
+                    deleted: 0,
+                    libstatus: 0,
+                    author: 'Bharath Manica Vasagam',
+                    notes: that.notes_accum(raw_data[index]),
+                    cells: that.decide_celltype(raw_data[index]),
+                    protocol: raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL,
+                    laboratory_id: that.lab_id,
+                    egroup_id: that.grp_id,
+                    url: that.check_runaccession(raw_data[index]),
+                    name4browser: raw_data[index].RUN_SET.RUN.accession,
+                    genome_id: 10,
+                    antibody_id: value,
+                    download_id:2,
+                    antibodycode:'',
+                    params: '{"promoter" : 1000}'
                     };
-                    console.log(json);
-                    //SWITCH TO TRANSPORT DATA
-
+                    //console.log(json);
                 });
                 arr[1] = that.decide_exptypeid(raw_data[index]).then(value =>{
                     json[index].experimenttype_id = value;
                 });
 
-                // that.check_runaccession(raw_data).then(value=>{
-                //     json[index].url = value;
+                // arr[2] = that.check_runaccession(raw_data[index]).then(value =>{
+                //     json[index].url= value
                 // });
-                // input for exptypeconsole.log(Object.keys(raw_data[i].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0]);
             });
 
      return Promise.all(arr).then(()=>{
-
-         console.log('2');
-         Meteor.call('insert', json, function(err,res) {
-
-         if (err) console.log(err);
-     });
-         return json.length;
+         var b = json.length
+         Meteor.call('insert', this.clean(json), function(err,res) {
+             if (err) console.log(err);
+             //console.log(res);
+         });
+         return ({a:this.clean(json), b:b});
      });
     }
 
@@ -230,6 +222,7 @@ class Socially {
                 if (a){
                     resolve(a.id);
                 }
+                else{resolve ('')}
             });
         });
     }
@@ -259,9 +252,11 @@ class Socially {
         //                 if (err) {reject(err)}
         //                 if (res == true){adv.push(filename)}
         //                 else {adv.push(path)}
+        //                 console.log(adv);
+        //                 resolve(adv.join(';'));
         //             });
-        //             resolve(adv.join(';'));
         //         });
+        //
         //     }
         //
         // });
@@ -273,9 +268,9 @@ class Socially {
         }
         else{
             for (var i=0;i<raw_data.RUN_SET.RUN.length; i++){
-                var adv = adv + '; ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/' + raw_data.RUN_SET.RUN[i].accession.substring(0, 3) + '/' + raw_data.RUN_SET.RUN[i].accession.substring(0, 6) + '/' + raw_data.RUN_SET.RUN[i].accession + '/' + raw_data.RUN_SET.RUN[i].accession + '.sra'
+                adv[i] = 'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/' + raw_data.RUN_SET.RUN[i].accession.substring(0, 3) + '/' + raw_data.RUN_SET.RUN[i].accession.substring(0, 6) + '/' + raw_data.RUN_SET.RUN[i].accession + '/' + raw_data.RUN_SET.RUN[i].accession + '.sra'
             }
-            return adv;
+            return adv.join(';');
         }
     }
 
@@ -309,22 +304,22 @@ class Socially {
         var a,b,c,d,e,f,g;
 
         if (raw_data.EXPERIMENT.alias){
-            a = 'BIOPROJECT:' + raw_data.EXPERIMENT.alias}
+            a = '<b>BIOPROJECT:</b> ' + raw_data.EXPERIMENT.alias}
         if (raw_data.SUBMISSION.alias){
-            b = '\n<br> SUBMISSION ALIAS:'+raw_data.SUBMISSION.alias}
+            b = '\n<br> <b>SUBMISSION ALIAS: </b>'+raw_data.SUBMISSION.alias}
         if (raw_data.Pool.Member.organism){
-            c = '\n<br> ORGANISM:' +raw_data.Pool.Member.organism}
+            c = '\n<br> <b>ORGANISM: </b>' +raw_data.Pool.Member.organism}
         if (raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY){
-            d = '\n<br> ASSAY TYPE:' +raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY;
+            d = '\n<br> <b>ASSAY TYPE: </b>' +raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY;
         }
         if(raw_data.STUDY.DESCRIPTOR.CENTER_PROJECT_NAME){
-            e = '\n<br> CENTER PROJECT NAME:' +raw_data.STUDY.DESCRIPTOR.CENTER_PROJECT_NAME;
+            e = '\n<br> <b>CENTER PROJECT NAME: </b>' +raw_data.STUDY.DESCRIPTOR.CENTER_PROJECT_NAME;
         }
         if(raw_data.STUDY.DESCRIPTOR.STUDY_TITLE){
-            f = '\n<br><br> STUDY TITLE:' +raw_data.STUDY.DESCRIPTOR.STUDY_TITLE;
+            f = '\n<br><br> <b>STUDY TITLE: </b>' +raw_data.STUDY.DESCRIPTOR.STUDY_TITLE;
         }
         if (raw_data.STUDY.DESCRIPTOR.STUDY_ABSTRACT){
-            g = '\n<br><br> STUDY ABSTRACT:' +raw_data.STUDY.DESCRIPTOR.STUDY_ABSTRACT;
+            g = '\n<br><br> <b>STUDY ABSTRACT: </b>' +raw_data.STUDY.DESCRIPTOR.STUDY_ABSTRACT;
         }
         return (a+b+c+d+e+f+g);
     }
@@ -356,8 +351,6 @@ class Socially {
 
             });
         });
-
-
         // This function was written to include the UNAVAILABLE anitbody into antibody table
         // Meteor.call('antibody',function(err,res){
         //     var antibody;
@@ -381,11 +374,28 @@ class Socially {
         // });
 
     }
-    // get_antibody_sync(raw_data){
-    //     var output;
-    //     this.decide_antibody(raw_data).then(value =>{
-    //     });
-    // }
+    name4browser(raw_data){
+        if (raw_data.RUN_SET.RUN.accession){
+            return raw_data.RUN_SET.RUN.accession
+        }
+        else{
+            var n4b=[];
+            for (var i =0; i < raw_data.RUN_SET.RUN.length; i++){
+                n4b[i] = raw_data.RUN_SET.RUN[i].accession
+            }
+            return n4b.join(';')
+        }
+    }
+
+    clean(json){
+        var gh=json;
+        for (var i = 0; i< json.length; i++){
+            if (json[i].experimenttype_id == ''| null){
+                gh.splice(i,1)
+            }
+        }
+        return (gh);
+    }
 }
 // var arr = Object.keys(obj).map(function (key) {return obj[key]});
 bootstrap(Socially,[NO_SANITIZATION_PROVIDERS, DropdownComponent, ROUTER_PROVIDERS, provide(APP_BASE_HREF, { useValue: '/' })]);

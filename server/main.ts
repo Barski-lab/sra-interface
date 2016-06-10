@@ -23,26 +23,27 @@ Meteor.startup(() => {});
 Meteor.methods({
     // Main insertion function
     'insert':function(data) {
-        console.log(data.antibody_id);
         console.log('Ready to transfer data');
         return new Promise((resolve, reject)=> {
             pool.getConnection((err, connection) => {
                 console.log('ok');
+                var uid_list=[];
                 data.forEach(function(listitem,index){
                     console.log('ITERATION _'+index);
                     connection.query(
-                        //'INSERT INTO labdata ( uid,deleted, libstatus, author, notes, protocol, dateadd, url, genome_id, expereminttype_id  ) values', [], (err, rows, fields)=> {
+                        //'UPDATE labdata SET ? WHERE id IN (3804,3803)',{notes:[data[index].notes]},(err,res)=>{
                         'INSERT INTO labdata SET ?', data[index] , (err, res)=> {
                             console.log(data[index]);
                             if (err == null) {
                                 console.log('Added' + data[index].uid);
-                                resolve(res);
+                                uid_list[index] = data[index].uid
                             } else {
                                 console.log(err);
                                 reject('nothing');
                             }
                         });
                 });
+                resolve(uid_list);
                 connection.release();
 
             });
@@ -51,15 +52,17 @@ Meteor.methods({
     
     // Checks for the ftp link. If active returns the link, if not returns just the SRR number
     'ftpcheck':function(path,filename){
+        var orig_path = path.split('ftp-trace.ncbi.nlm.nih.gov')[1].split(filename)[0]
         return new Promise((resolve,reject)=>{
             var c = new Client();
-            var path="/sra/sra-instant/reads/ByRun/sra/SRR/SRR001/SRR001000/";
+            //var path="/sra/sra-instant/reads/ByRun/sra/SRR/SRR001/SRR001000/";
             var ftpServer = {
-                host:""
+                host:"ftp-trace.ncbi.nlm.nih.gov"
             }
             c.connect(ftpServer);
             c.on( 'ready', function () {
-                c.list(path, function ( err, list ) {
+                c.list(orig_path, function ( err, list ) {
+                    console.log(list)
                     if ( err ) reject (err);
                     resolve(list[0].name == filename);
                 });

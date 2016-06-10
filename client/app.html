@@ -73,7 +73,14 @@ SRA / SRP / GSM / ERP number
 
             <!--<input #{{item?.RUN_SET?.RUN?.accession}} [ngModel] = 'item?.RUN_SET?.RUN?.accession?.selected' type="checkbox" (change)="checkbox(item?.RUN_SET?.RUN?.accession, i, $event, 'run_accession')">-->
 
-            <l>RUN ACCESSION: </l><a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 3)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(item?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{item.RUN_SET.RUN.accession | displaypipe}}</a>
+            <l>RUN ACCESSION: </l>
+                <ab *ngIf="!(item?.RUN_SET?.RUN | isarray)">
+            <a href = "{{'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 3)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe | linkpipe: 6)+'/'+(item?.RUN_SET?.RUN?.accession | displaypipe)+ '/'+(item?.RUN_SET.RUN.accession | displaypipe)+ '.sra'}}">{{item.RUN_SET.RUN.accession | displaypipe}}</a>
+                 </ab>
+            <ab *ngIf = "(item?.RUN_SET?.RUN | isarray)">
+                ARRAY OF RUNS
+
+            </ab>
             <br>
     <tr *ngFor="let value of item.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE; #j = index">
     <l>{{value?.TAG+ ': ' | uppercase}}</l>{{value?.VALUE}}<br> </tr>
