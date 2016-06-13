@@ -42,8 +42,17 @@ class Socially {
         console.log('Clicked');
         return new Promise((resolve,reject) => {
             sra(id).then((res)=>{
-                this.output = res.Record;
-                resolve(this.output);
+                if (res.Record.length>1){
+                    this.output = res.Record;
+                    resolve(this.output);
+                }
+                else{
+                    this.output = [];
+                    this.output.push(res.Record);
+                    resolve(this.output);
+                    console.log('Array_output')
+                }
+
                 console.log(this.output);
                 console.log('Retrieved');
             });
@@ -52,7 +61,7 @@ class Socially {
 
     //Select all option
     select_all(event,output){
-        if(event.target.checked){
+        if(event.target.checked && !output.isArray) {
             this.global_flag = true;
             this.all_output = output;
             console.log('Select All option Chosen')
@@ -153,6 +162,7 @@ class Socially {
 
     // Sending all data to Database
     dump_all(raw_data){
+        console.log('dump_all')
         var that = this;
         var arr = [];
         var json = [];
@@ -204,6 +214,7 @@ class Socially {
 
     // Returns Type of the experiment RNA-Seq or DNA-Seq Single or Paired
     decide_exptypeid(raw_data){
+        console.log('Experiment id')
         var assay_type = raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY;
         var layout = Object.keys(raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0];
         return new Promise((resolve,reject)=>{
