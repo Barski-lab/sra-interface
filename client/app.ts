@@ -12,17 +12,20 @@ import { Meteor } from 'meteor/meteor';
 import { ROUTER_PROVIDERS, ROUTER_DIRECTIVES, RouteConfig } from '@angular/router-deprecated';
 import { APP_BASE_HREF } from '@angular/common';
 import {isArray} from "@angular/platform-browser/src/facade/lang";
-import {DropdownComponent} from './component/dropdown.component';
+import {DropdownComponent} from './component/dropdown/dropdown.component';
+import {LoadingService} from "./component/loading_component/loading_service";
+import {LoadingIndicator} from "./component/loading_component/loading_component";
 
 @Component({
     selector: 'app',
     templateUrl: 'client/app.html',
     pipes: [DisplayPipe, LinkPipe, IsArray, LayoutPipe],
-    directives: [ROUTER_DIRECTIVES, DropdownComponent]
+    directives: [ROUTER_DIRECTIVES, DropdownComponent, LoadingIndicator],
+    providers: [LoadingService]
 })
 
 // @RouteConfig([
-//     { path: '/', as: 'query', component: query},
+//     { path: '/', as: 'query', component: Socially}
 // ])
 
 class Socially {
@@ -32,11 +35,14 @@ class Socially {
     public all_output;
     public lab_id;
     public grp_id;
-
-    constructor() {}
+    public write_todb: Boolean = true;
+    constructor(private loadingservice:LoadingService) {}
+    
   
     //Display the SRA details
     getsra(id,lab_id,grp_id) {
+        this.output = null;
+        this.loadingservice.toggleLoadingIndicator(true);
         this.lab_id = lab_id;
         this.grp_id = grp_id;
         console.log('Clicked');
@@ -52,7 +58,7 @@ class Socially {
                     resolve(this.output);
                     console.log('Array_output')
                 }
-
+                this.loadingservice.toggleLoadingIndicator(false);
                 console.log(this.output);
                 console.log('Retrieved');
             });
@@ -61,7 +67,7 @@ class Socially {
 
     //Select all option
     select_all(event,output){
-        if(event.target.checked && !output.isArray) {
+        if(event.target.checked) {
             this.global_flag = true;
             this.all_output = output;
             console.log('Select All option Chosen')
@@ -74,13 +80,12 @@ class Socially {
     // Intermediate function to transport everything
     Selected() {
         if (this.global_flag == false){
-            //Routine to select only selected record of the SRA
-            this.Object_relevant_json(this.gross).then(value => {
-                console.log(value);
-                Meteor.call('insert', value , function(err,res) {
-                    if (err) console.log(err);
-                });
+            //clean the empty items and dump all
+            this.dump_all(this.clean_selected_input(this.gross)).then(value=>{
+                console.log(value.a.length + 'Records added')
+                console.log(value.b-value.a.length+ ' Records Deleted because it is not either DNA or RNA Seq')
             });
+            //Routine to select only selected record of the SRA
         }
         else{
             this.dump_all(this.all_output).then(value => {
@@ -93,57 +98,19 @@ class Socially {
         }
     }
 
-    initialize(item,i,event,text) {
-        if (typeof this.gross.text == 'undefined') {
-            this.gross[text] = new Array();
-        }
-        return this.gross;
-    }
-
-    checkbox(item, i, event, text) {
-        console.log(event);
-        if (typeof this.gross[text] == "undefined")
-        {
-
-            this.initialize(item, i, event, text);
-        }
-        console.log(item+i+event+text);
+    checkbox(item, i, event) {
 
         if (event.target.checked && i==i && this.global_flag == false){
             console.log(this.gross);
-            this.gross[text][i] = item;
-            console.log('added '+text+'_'+i);
+            this.gross[i] = item;
+            console.log('added '+item+'_'+i);
         }
         if (!event.target.checked && i==i && this.global_flag == false){
-            this.gross[text][i] = '';
-            console.log('deleted '+text+'_'+i)
+            this.gross[i] = '';
+            console.log('deleted '+item+'_'+i)
         }
     }
 
-    Object_relevant_json(obj){
-        return new Promise((resolve,reject)=>{
-            var json = [];
-            var l = Object.keys(obj).length;
-            //include function to determine the max of each array elements
-            for (var i = 0; i<2; i++) {
-                json[i] = {
-                    uid: this.uuid(),
-                    deleted: 0,
-                    libstatus: 0,
-                    author: 'bharath',
-                    notes: '',
-                    cells: '',
-                    conditions: '',
-                    protocol: obj.protocol[i],
-                    dateadd: new Date().toISOString().slice(0, 10),
-                    url: 'ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/' + obj.run_accession[0].substring(0, 3) + '/' + obj.run_accession[0].substring(0, 6) + '/' + obj.run_accession[0] + '/' + obj.run_accession[0] + '.sra',
-                    genome_id: 1,
-                    experimenttype_id: this.decide_exptypeid(obj.assay_type[i])
-                };
-            }
-            resolve(json);
-        });
-    }
     // Generate UUID
     uuid() {
     var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -184,14 +151,13 @@ class Socially {
                     laboratory_id: that.lab_id,
                     egroup_id: that.grp_id,
                     url: that.check_runaccession(raw_data[index]),
-                    name4browser: raw_data[index].RUN_SET.RUN.accession,
-                    genome_id: 10,
+                    name4browser: raw_data[index].Pool.Member.sample_title,
+                    genome_id: that.decide_genome_type(raw_data[index]),
                     antibody_id: value,
                     download_id:2,
                     antibodycode:'',
                     params: '{"promoter" : 1000}'
                     };
-                    //console.log(json);
                 });
                 arr[1] = that.decide_exptypeid(raw_data[index]).then(value =>{
                     json[index].experimenttype_id = value;
@@ -368,12 +334,12 @@ class Socially {
         //     console.log(raw);
         //     //resolve(res);
         //     var res_id = _.find(res, function(elem){
-        //        if (elem.antibody.toLowerCase() == raw.toLowerCase()){return elem.id}
+        //         if (elem.antibody.toLowerCase() == raw.toLowerCase()){return elem.id}
         //     });
         //     if (res_id){resolve (res_id.id)}
         //     else{
         //         antibody = {
-        //           antibody: raw,
+        //             antibody: raw,
         //             id: that.uuid()
         //         };
         //         Meteor.call('insert_antibody',antibody, function(err,res){
@@ -385,18 +351,6 @@ class Socially {
         // });
 
     }
-    name4browser(raw_data){
-        if (raw_data.RUN_SET.RUN.accession){
-            return raw_data.RUN_SET.RUN.accession
-        }
-        else{
-            var n4b=[];
-            for (var i =0; i < raw_data.RUN_SET.RUN.length; i++){
-                n4b[i] = raw_data.RUN_SET.RUN[i].accession
-            }
-            return n4b.join(';')
-        }
-    }
 
     clean(json){
         var gh=json;
@@ -407,6 +361,35 @@ class Socially {
         }
         return (gh);
     }
+
+    decide_genome_type(raw_data){
+        var genome = [{id:1, name: 'Homo Sapiens'},
+            {id: 3, name: 'Mus Musculus'},
+            {id: 4, name: 'Rattus Rattus'},
+            {id: 8, name: 'Drosophila Melanogaster'},
+            {id: 10, name: 'Xenopus tropicalis'},
+            {id: 9, name: 'Xenopus laevis'}]
+        var ind = _.find(genome, function (rw) {
+            if (raw_data.Pool.Member.organism.toLowerCase().match(rw.name.toLowerCase().split(' ')[0]) &&
+                (raw_data.Pool.Member.organism.toLowerCase().match(rw.name.toLowerCase().split(' ')[1]))) {
+                return rw.id;
+            }
+        });
+        console.log(ind);
+        if (ind){
+            return ind.id
+        }else{
+            //this.write_todb = false;
+            //Activate Donot write flag
+            alert("Genome type doesnot match with Biowardrobe's database\nCannot write records to database")
+        }
+    }
+
+    clean_selected_input(selected_input){
+        var arr = selected_input.filter(function(e){return e});
+        console.log(arr)
+        return arr;
+    }
 }
 // var arr = Object.keys(obj).map(function (key) {return obj[key]});
-bootstrap(Socially,[NO_SANITIZATION_PROVIDERS, DropdownComponent, ROUTER_PROVIDERS, provide(APP_BASE_HREF, { useValue: '/' })]);
+bootstrap(Socially,[NO_SANITIZATION_PROVIDERS, DropdownComponent, LoadingIndicator, ROUTER_PROVIDERS, provide(APP_BASE_HREF, { useValue: '/' })]);
