@@ -136,7 +136,7 @@ class Socially {
         var json = [];
         raw_data.forEach((listitem,index) => {
             arr[0] = that.decide_antibody(raw_data[index]).then(value =>{
-                console.log(value)
+                console.log(value.antibody)
                 json[index] = {
                     experimenttype_id:'',
                     cells: that.decide_celltype(raw_data[index]),
@@ -147,7 +147,6 @@ class Socially {
                     libstatus: 0,
                     author: 'Bharath Manica Vasagam',
                     notes: that.notes_accum(raw_data[index]),
-                    cells: that.decide_celltype(raw_data[index]),
                     protocol: raw_data[index].EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_CONSTRUCTION_PROTOCOL,
                     laboratory_id: that.lab_id,
                     egroup_id: that.grp_id,
@@ -156,7 +155,7 @@ class Socially {
                     genome_id: that.decide_genome_type(raw_data[index]),
                     antibody_id: value.antibody,
                     download_id:2,
-                    antibodycode:value.antibodycode.VALUE,
+                    antibodycode: value.antibodyname + ' ' + that.decide_anitbody_code(raw_data[index]),
                     params: '{"promoter" : 1000}',
                     };
                 });
@@ -171,6 +170,7 @@ class Socially {
 
      return Promise.all(arr).then(()=>{
          var b = json.length
+         console.log(json);
          if(this.write_todb== true){
              Meteor.call('insert', this.clean(json), function(err,res) {
                  if (err) console.log(err);
@@ -285,14 +285,14 @@ class Socially {
                 for (var i=0;i<raw_data.RUN_SET.RUN.length; i++){
                     adv[i] = raw_data.RUN_SET.RUN[i].accession
                 }
-                return adv.join(';')
+                return adv.join('; ')
             }
         }
     }
 
     //Returns the notes - accumulation of relevant details that is not entered into wardrobe
     notes_accum(raw_data){
-        var a,b,c,d,e,f,g;
+        var a,b,c,d,e,f,g,h;
 
         if (raw_data.EXPERIMENT.alias){
             a = '<b>BIOPROJECT:</b> ' + raw_data.EXPERIMENT.alias}
@@ -312,7 +312,10 @@ class Socially {
         if (raw_data.STUDY.DESCRIPTOR.STUDY_ABSTRACT){
             g = '\n<br><br> <b>STUDY ABSTRACT: </b>' +raw_data.STUDY.DESCRIPTOR.STUDY_ABSTRACT;
         }
-        return (a+b+c+d+e+f+g);
+        if(raw_data.EXPERIMENT.EXPERIMENT_ATTRIBUTES.EXPERIMENT_ATTRIBUTE.VALUE){
+            h = '\n\n<br><br> <iframe src="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+raw_data.EXPERIMENT.EXPERIMENT_ATTRIBUTES.EXPERIMENT_ATTRIBUTE.VALUE+'"width="1000" height="1000"></iframe> '
+        }
+        return (a+b+c+d+e+f+g+h);
     }
 
     // Returns antibody id if available or else adds the new antibody to database and returns it
@@ -320,24 +323,27 @@ class Socially {
         return new Promise((resolve, reject) => {
             console.log('Check antibody')
             Meteor.call('antibody', function (err, res) {
+                console.log('inside')
                 if (err) {reject(err)}
                 else {
                     var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE;
                     var ind = _.find(a, function (rw) {
-                        if (rw.TAG == 'chip antibody' & rw.VALUE != 'no antibody') {
+                        if (rw.TAG == 'chip antibody' | rw.TAG == 'antibody' & rw.VALUE != 'no antibody') {
                             return rw.VALUE
                         }
                     });
                     if (ind) {
-                        console.log(ind);
-                        var raw =ind.VALUE.split('anti-')[1].split('(')[0].split(' ')[0];
-                        //var raw = 'H3K27me3'
-                        var index = res.findIndex(x => x.antibody.toLowerCase() == raw.toLowerCase());
-                        if(index != -1){resolve({antibody: res[index].id, antibodycode:ind})}
+                        var index1 = res.findIndex(x => x.antibody.toLowerCase() == ind.VALUE.toLowerCase());
+                        if(index != -1){resolve({antibodyname:res[index1].antibody, antibody: res[index1].id, antibodycode:ind})}
+                        else{
+                            var raw =ind.VALUE.split('anti-')[1].split('(')[0].split(' ')[0];
+                            //var raw = 'H3K27me3'
+                            var index = res.findIndex(x => x.antibody.toLowerCase() == raw.toLowerCase());
+                            if(index != -1){resolve({antibodyname: res[index].antibody, antibody: res[index].id, antibodycode:ind})}
                             //This is the id of N/A antibody
-                        else {resolve({antibody:'antibody-0000-0000-0000-000000000001', antibodycode:ind})}
-                    } else {
-                        resolve({antibody:'antibody-0000-0000-0000-000000000001',antibodycode:''})
+                            else {resolve({antibodyname:'N/A', antibody:'antibody-0000-0000-0000-000000000001', antibodycode:ind})}
+                    }} else {
+                        resolve({antibodyname:'N/A', antibody:'antibody-0000-0000-0000-000000000001',antibodycode:''})
                     }
                 }
 
@@ -404,6 +410,28 @@ class Socially {
         var arr = selected_input.filter(function(e){return e});
         console.log(arr)
         return arr;
+    }
+
+    decide_anitbody_code(raw_data){
+        var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE;
+        var ind = _.find(a, function (rw) {
+            if (rw.TAG == 'antibody vendorname') {
+                return rw.VALUE
+            }
+        });
+        var ind2 = _.find(a, function (rw) {
+            if (rw.TAG == 'antibody vendorid') {
+                return rw.VALUE
+            }
+        });
+        if(!ind && ind2){
+            return '';
+        }
+        else{
+            if(ind && ind2){
+                return (ind.VALUE + ' ' + ind2.VALUE)
+            }
+        }
     }
 }
 // var arr = Object.keys(obj).map(function (key) {return obj[key]});
