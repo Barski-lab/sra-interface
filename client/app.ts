@@ -41,6 +41,7 @@ class Socially {
   
     //Display the SRA details
     getsra(id,lab_id,grp_id) {
+        //window.location.reload();
         this.output = null;
         this.loadingservice.toggleLoadingIndicator(true);
         this.lab_id = lab_id;
@@ -56,7 +57,6 @@ class Socially {
                     this.output = [];
                     this.output.push(res.Record);
                     resolve(this.output);
-                    console.log('Array_output')
                 }
                 this.loadingservice.toggleLoadingIndicator(false);
                 console.log(this.output);
@@ -80,21 +80,22 @@ class Socially {
     // Intermediate function to transport everything
     Selected() {
         if (this.global_flag == false){
-            //clean the empty items and dump all
+            //clean the empty items and dump_all
             this.dump_all(this.clean_selected_input(this.gross)).then(value=>{
-                console.log(value.a.length + 'Records added')
-                console.log(value.b-value.a.length+ ' Records Deleted because it is not either DNA or RNA Seq')
-            });
+                if (value){
+                    console.log(value.a.length + 'Records added')
+                    console.log(value.b-value.a.length+ ' Records Deleted because it is not either DNA or RNA Seq')
+                }
+                });
             //Routine to select only selected record of the SRA
         }
         else{
             this.dump_all(this.all_output).then(value => {
-                //console.log(value.a)
-                console.log(value.a.length + ' Records added')
-                console.log(value.b-value.a.length + ' Records Deleted because it is not either DNA or RNA Seq')
+                if (value){
+                    console.log(value.a.length + 'Records added')
+                    console.log(value.b-value.a.length+ ' Records Deleted because it is not either DNA or RNA Seq')
+                }
             });
-
-
         }
     }
 
@@ -153,10 +154,10 @@ class Socially {
                     url: that.check_runaccession(raw_data[index]),
                     name4browser: raw_data[index].Pool.Member.sample_title,
                     genome_id: that.decide_genome_type(raw_data[index]),
-                    antibody_id: value,
+                    antibody_id: value.antibody,
                     download_id:2,
-                    antibodycode:'',
-                    params: '{"promoter" : 1000}'
+                    antibodycode:value.antibodycode.VALUE,
+                    params: '{"promoter" : 1000}',
                     };
                 });
                 arr[1] = that.decide_exptypeid(raw_data[index]).then(value =>{
@@ -170,11 +171,15 @@ class Socially {
 
      return Promise.all(arr).then(()=>{
          var b = json.length
-         Meteor.call('insert', this.clean(json), function(err,res) {
-             if (err) console.log(err);
-             //console.log(res);
-         });
-         return ({a:this.clean(json), b:b});
+         if(this.write_todb== true){
+             Meteor.call('insert', this.clean(json), function(err,res) {
+                 if (err) console.log(err);
+                 //console.log(res);
+             });
+         }
+         if(this.write_todb == true){
+             return ({a:this.clean(json), b:b});
+         }
      });
     }
 
@@ -265,6 +270,7 @@ class Socially {
     }
 
     decide_conditions(raw_data){
+        var adv = [];
         //item.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE
         var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE
         var ind = _.find(a, function(rw){
@@ -273,7 +279,15 @@ class Socially {
             }
         });
         if (ind){return(ind.VALUE)}
-        else {return (raw_data.RUN_SET.RUN.accession)}
+        else {
+            if (!isArray(raw_data.RUN_SET.RUN)){return raw_data.RUN_SET.RUN.accession}
+            else{
+                for (var i=0;i<raw_data.RUN_SET.RUN.length; i++){
+                    adv[i] = raw_data.RUN_SET.RUN[i].accession
+                }
+                return adv.join(';')
+            }
+        }
     }
 
     //Returns the notes - accumulation of relevant details that is not entered into wardrobe
@@ -315,14 +329,15 @@ class Socially {
                         }
                     });
                     if (ind) {
+                        console.log(ind);
                         var raw =ind.VALUE.split('anti-')[1].split('(')[0].split(' ')[0];
                         //var raw = 'H3K27me3'
                         var index = res.findIndex(x => x.antibody.toLowerCase() == raw.toLowerCase());
-                        if(index != -1){resolve(res[index].id)}
+                        if(index != -1){resolve({antibody: res[index].id, antibodycode:ind})}
                             //This is the id of N/A antibody
-                        else {resolve('antibody-0000-0000-0000-000000000001')}
+                        else {resolve({antibody:'antibody-0000-0000-0000-000000000001', antibodycode:ind})}
                     } else {
-                        resolve('antibody-0000-0000-0000-000000000001')
+                        resolve({antibody:'antibody-0000-0000-0000-000000000001',antibodycode:''})
                     }
                 }
 
@@ -379,7 +394,7 @@ class Socially {
         if (ind){
             return ind.id
         }else{
-            //this.write_todb = false;
+            this.write_todb = false;
             //Activate Donot write flag
             alert("Genome type doesnot match with Biowardrobe's database\nCannot write records to database")
         }
