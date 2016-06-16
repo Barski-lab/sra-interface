@@ -151,7 +151,7 @@ class Socially {
                     laboratory_id: that.lab_id,
                     egroup_id: that.grp_id,
                     url: that.check_runaccession(raw_data[index]),
-                    name4browser: raw_data[index].Pool.Member.sample_title,
+                    name4browser: that.name4browser(raw_data[index]),
                     genome_id: that.decide_genome_type(raw_data[index]),
                     antibody_id: value.antibody,
                     download_id:2,
@@ -174,7 +174,6 @@ class Socially {
          if(this.write_todb== true){
              Meteor.call('insert', this.clean(json), function(err,res) {
                  if (err) console.log(err);
-                 //console.log(res);
              });
          }
          if(this.write_todb == true){
@@ -323,7 +322,6 @@ class Socially {
         return new Promise((resolve, reject) => {
             console.log('Check antibody')
             Meteor.call('antibody', function (err, res) {
-                console.log('inside')
                 if (err) {reject(err)}
                 else {
                     var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE;
@@ -408,7 +406,6 @@ class Socially {
 
     clean_selected_input(selected_input){
         var arr = selected_input.filter(function(e){return e});
-        console.log(arr)
         return arr;
     }
 
@@ -432,6 +429,12 @@ class Socially {
                 return (ind.VALUE + ' ' + ind2.VALUE)
             }
         }
+    }
+
+    name4browser(raw_data){
+        if (raw_data.Pool.Member.sample_title){
+            return raw_data.Pool.Member.sample_title
+        } else { return '--' }
     }
 }
 // var arr = Object.keys(obj).map(function (key) {return obj[key]});
