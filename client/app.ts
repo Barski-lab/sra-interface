@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import 'zone.js/dist/zone';
-import { Component, provide, Input} from '@angular/core';
+import { Component, provide} from '@angular/core';
 import { bootstrap } from '@angular/platform-browser-dynamic';
 import { sra } from '../client/sra';
 import { DisplayPipe } from './display.pipe.ts';
@@ -28,7 +28,7 @@ import {LoadingIndicator} from "./component/loading_component/loading_component"
 //     { path: '/', as: 'query', component: Socially}
 // ])
 
-class Socially {
+class Interface {
     public gross:Object = [];
     public global_flag: Boolean = false;
     public output;
@@ -83,7 +83,7 @@ class Socially {
             //clean the empty items and dump_all
             this.dump_all(this.clean_selected_input(this.gross)).then(value=>{
                 if (value){
-                    console.log(value.a.length + 'Records added')
+                    console.log(value.a.length + 'Records added');
                     console.log(value.b-value.a.length+ ' Records Deleted because it is not either DNA or RNA Seq')
                 }
                 });
@@ -92,7 +92,7 @@ class Socially {
         else{
             this.dump_all(this.all_output).then(value => {
                 if (value){
-                    console.log(value.a.length + 'Records added')
+                    console.log(value.a.length + 'Records added');
                     console.log(value.b-value.a.length+ ' Records Deleted because it is not either DNA or RNA Seq')
                 }
             });
@@ -130,13 +130,12 @@ class Socially {
 
     // Sending all data to Database
     dump_all(raw_data){
-        console.log('dump_all')
-        var that = this;
-        var arr = [];
         var json = [];
+        console.log('dump_all');
+        var that = this, arr = [];
         raw_data.forEach((listitem,index) => {
             arr[0] = that.decide_antibody(raw_data[index]).then(value =>{
-                console.log(value.antibody)
+                console.log(value);
                 json[index] = {
                     experimenttype_id:'',
                     cells: that.decide_celltype(raw_data[index]),
@@ -159,17 +158,15 @@ class Socially {
                     params: '{"promoter" : 1000}',
                     };
                 });
-                arr[1] = that.decide_exptypeid(raw_data[index]).then(value =>{
-                    json[index].experimenttype_id = value;
-                });
-
+            arr[1] = that.decide_exptypeid(raw_data[index]).then(value =>{
+                json[index].experimenttype_id = value
+            });
                 // arr[2] = that.check_runaccession(raw_data[index]).then(value =>{
                 //     json[index].url= value
                 // });
-            });
-
+        });
      return Promise.all(arr).then(()=>{
-         var b = json.length
+         var b = json.length;
          console.log(json);
          if(this.write_todb== true){
              Meteor.call('insert', this.clean(json), function(err,res) {
@@ -184,22 +181,24 @@ class Socially {
 
     // Returns Type of the experiment RNA-Seq or DNA-Seq Single or Paired
     decide_exptypeid(raw_data){
-        console.log('Experiment id')
+        console.log('Experiment id');
         var assay_type = raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_STRATEGY;
         var layout = Object.keys(raw_data.EXPERIMENT.DESIGN.LIBRARY_DESCRIPTOR.LIBRARY_LAYOUT)[0];
         return new Promise((resolve,reject)=>{
+            console.log('inside')
             Meteor.call('populate_exp',function(err,res){
                 if (err) reject(err);
                 var a = _.find(res, function(rw){
-                    if (layout == 'PAIRED' & (assay_type == 'DNA-Seq' | assay_type == 'RNA-Seq')){
+                    if (layout == 'PAIRED' && (assay_type == 'DNA-Seq' || assay_type == 'RNA-Seq')){
                         return rw.etype == assay_type+' pair'
                     }
-                    else if (layout == 'PAIRED' & assay_type == 'ChIP-Seq'){
+                    else if (layout == 'PAIRED' && assay_type == 'ChIP-Seq'){
                         return rw.etype == 'DNA-Seq'+' pair'
                     }
-                    else if (layout == 'SINGLE' & assay_type == 'ChIP-Seq'){
+                    else if (layout == 'SINGLE' && assay_type == 'ChIP-Seq'){
                         return rw.etype == 'DNA-Seq'
                     }else return rw.etype == assay_type});
+                console.log(a)
                 if (a){
                     resolve(a.id);
                 }
@@ -207,6 +206,7 @@ class Socially {
             });
         });
     }
+
 
     // Returns URL to download SRR.SRA files
     check_runaccession(raw_data){
@@ -271,7 +271,7 @@ class Socially {
     decide_conditions(raw_data){
         var adv = [];
         //item.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE
-        var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE
+        var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE;
         var ind = _.find(a, function(rw){
             if (rw.TAG == 'treatment'){
                 return rw.VALUE
@@ -312,7 +312,7 @@ class Socially {
             g = '\n<br><br> <b>STUDY ABSTRACT: </b>' +raw_data.STUDY.DESCRIPTOR.STUDY_ABSTRACT;
         }
         if(raw_data.EXPERIMENT.EXPERIMENT_ATTRIBUTES.EXPERIMENT_ATTRIBUTE.VALUE){
-            h = '\n\n<br><br> <iframe src="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+raw_data.EXPERIMENT.EXPERIMENT_ATTRIBUTES.EXPERIMENT_ATTRIBUTE.VALUE+'"width="1000" height="1000"></iframe> '
+            h = '\n\n<br><br> GEO ACCESSION: <a href="http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='+raw_data.EXPERIMENT.EXPERIMENT_ATTRIBUTES.EXPERIMENT_ATTRIBUTE.VALUE+'"><b>'+raw_data.EXPERIMENT.EXPERIMENT_ATTRIBUTES.EXPERIMENT_ATTRIBUTE.VALUE+'</b></a>'
         }
         return (a+b+c+d+e+f+g+h);
     }
@@ -326,21 +326,43 @@ class Socially {
                 else {
                     var a = raw_data.SAMPLE.SAMPLE_ATTRIBUTES.SAMPLE_ATTRIBUTE;
                     var ind = _.find(a, function (rw) {
-                        if (rw.TAG == 'chip antibody' | rw.TAG == 'antibody' & rw.VALUE != 'no antibody') {
+                        if (rw.TAG == 'chip antibody' || rw.TAG == 'antibody' && rw.VALUE != 'no antibody') {
                             return rw.VALUE
                         }
                     });
                     if (ind) {
                         var index1 = res.findIndex(x => x.antibody.toLowerCase() == ind.VALUE.toLowerCase());
-                        if(index != -1){resolve({antibodyname:res[index1].antibody, antibody: res[index1].id, antibodycode:ind})}
+                        if(index1 != -1){resolve({antibodyname:res[index1].antibody, antibody: res[index1].id, antibodycode:ind})}
                         else{
-                            var raw =ind.VALUE.split('anti-')[1].split('(')[0].split(' ')[0];
-                            //var raw = 'H3K27me3'
-                            var index = res.findIndex(x => x.antibody.toLowerCase() == raw.toLowerCase());
-                            if(index != -1){resolve({antibodyname: res[index].antibody, antibody: res[index].id, antibodycode:ind})}
-                            //This is the id of N/A antibody
-                            else {resolve({antibodyname:'N/A', antibody:'antibody-0000-0000-0000-000000000001', antibodycode:ind})}
-                    }} else {
+                            if(ind.VALUE.indexOf('-') > -1 ) {
+                                var raw = ind.VALUE.split('anti-')[1].split('(')[0].split(' ')[0];
+                                //var raw = 'H3K27me3'
+                                var index = res.findIndex(x => x.antibody.toLowerCase() == raw.toLowerCase());
+                                if (index != -1) {
+                                    resolve({
+                                        antibodyname: res[index].antibody,
+                                        antibody: res[index].id,
+                                        antibodycode: ind
+                                    })
+                                }
+                                //This is the id of N/A antibody
+                                else {
+                                    resolve({
+                                        antibodyname: 'N/A',
+                                        antibody: 'antibody-0000-0000-0000-000000000001',
+                                        antibodycode: ind
+                                    })
+                                }
+                            }
+                            else{
+                                console.log('else')
+                                resolve({
+                                    antibodyname: 'N/A',
+                                    antibody: 'antibody-0000-0000-0000-000000000001',
+                                    antibodycode: ind
+                                })
+                            }
+                        }} else {
                         resolve({antibodyname:'N/A', antibody:'antibody-0000-0000-0000-000000000001',antibodycode:''})
                     }
                 }
@@ -374,7 +396,7 @@ class Socially {
     clean(json){
         var gh=json;
         for (var i = 0; i< json.length; i++){
-            if (json[i].experimenttype_id == ''| null){
+            if (json[i].experimenttype_id == ''|| null){
                 gh.splice(i,1)
             }
         }
@@ -394,7 +416,6 @@ class Socially {
                 return rw.id;
             }
         });
-        console.log(ind);
         if (ind){
             return ind.id
         }else{
@@ -422,12 +443,12 @@ class Socially {
             }
         });
         if(!ind && ind2){
-            return '';
+            return ind2;
         }
-        else{
-            if(ind && ind2){
-                return (ind.VALUE + ' ' + ind2.VALUE)
-            }
+        if(ind && ind2){
+            return (ind.VALUE + ' ' + ind2.VALUE);
+        }else{
+            return '';
         }
     }
 
@@ -438,4 +459,4 @@ class Socially {
     }
 }
 // var arr = Object.keys(obj).map(function (key) {return obj[key]});
-bootstrap(Socially,[NO_SANITIZATION_PROVIDERS, DropdownComponent, LoadingIndicator, ROUTER_PROVIDERS, provide(APP_BASE_HREF, { useValue: '/' })]);
+bootstrap(Interface,[NO_SANITIZATION_PROVIDERS, DropdownComponent, LoadingIndicator, ROUTER_PROVIDERS, provide(APP_BASE_HREF, { useValue: '/' })]);

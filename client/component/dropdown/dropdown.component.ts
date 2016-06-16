@@ -1,9 +1,8 @@
-import {Component, Output} from '@angular/core'
-import { Meteor } from 'meteor/meteor';
-import 'reflect-metadata';
-import 'zone.js/dist/zone';
+import {Component, Injectable} from "@angular/core";
+import {Meteor} from "meteor/meteor";
+import "reflect-metadata";
+import "zone.js/dist/zone";
 import {Dropdownpipe} from "./dropdown.pipe";
-import {Injectable} from '@angular/core'
 
 @Component({
     selector: 'ui-form',
@@ -37,10 +36,7 @@ import {Injectable} from '@angular/core'
 })
 
 @Injectable()
-export class DropdownComponent{
-
-
-
+export class DropdownComponent {
     public lab;
     public lab_id;
     public grp;
@@ -48,56 +44,59 @@ export class DropdownComponent{
     public selected_lab_id;
     public selected_grp_id;
 
-    constructor(){
+    constructor() {
         this.get_data().then((output) => {
             this.lab_id = output.arr2
             this.lab = output.arr;
         })
     }
 
-    get_data(){
-        return new Promise((resolve,reject)=>{
-            Meteor.call('search_labid',(err,res)=>{
-                var arr=['SELECT']; //Default value
-                var arr2=['SELECT']; //Default value
-                res.forEach(function(item,index) {
-                    arr.push(res[index].name+'__'+res[index].id)
+    get_data() {
+        return new Promise((resolve, reject)=> {
+            Meteor.call('search_labid', (err, res)=> {
+                var arr = ['SELECT']; //Default value
+                var arr2 = ['SELECT']; //Default value
+                res.forEach(function (item, index) {
+                    arr.push(res[index].name + '__' + res[index].id)
                     arr2.push(res[index].id)
                 });
-                resolve({arr,arr2});
+                resolve({arr, arr2});
             });
         });
     }
 
-    display(value){
-        return new Promise((resolve,reject)=>{
-            Meteor.call('search_grpid',value, (err,res)=>{
-                var arr=['SELECT'];//Default value
-                var arr2=['SELECT'];//Default value
-                if (res == null){resolve('')}
+    display(value) {
+        return new Promise((resolve, reject)=> {
+            Meteor.call('search_grpid', value, (err, res)=> {
+                var arr = ['SELECT'];//Default value
+                var arr2 = ['SELECT'];//Default value
+                if (res == null) {
+                    resolve('')
+                }
                 else {
-                    res.forEach(function(item,index) {
-                        arr.push(res[index].name +'__'+res[index].id)
+                    res.forEach(function (item, index) {
+                        arr.push(res[index].name + '__' + res[index].id)
                         arr2.push(res[index].id)
                     });
                 }
-                resolve({arr,arr2});
+                resolve({arr, arr2});
             });
         });
     }
 
-    displaying(value){
-        this.display(value.split("__")[1]).then((output) =>{
+    displaying(value) {
+        this.display(value.split("__")[1]).then((output) => {
             this.grp = output.arr;
             this.grp_id = output.arr2
         });
     }
 
-    selected_lab(value){
-        console.log( value.split('__')[1])
+    selected_lab(value) {
+        console.log(value.split('__')[1])
         this.selected_lab_id = value.split('__')[1]
     }
-    selected_grp(value){
+
+    selected_grp(value) {
         console.log(value.split('__')[1]);
         this.selected_grp_id = value.split('__')[1]
     }
