@@ -36,12 +36,13 @@ class Interface {
     public lab_id;
     public grp_id;
     public write_todb: Boolean = true;
+    public error_flag: Boolean = false;
     constructor(private loadingservice:LoadingService) {}
     
   
     //Display the SRA details
     getsra(id,lab_id,grp_id) {
-        
+        this.error_flag = false;
         //window.location.reload();
         this.output = null;
         this.loadingservice.toggleLoadingIndicator(true);
@@ -62,6 +63,9 @@ class Interface {
                 this.loadingservice.toggleLoadingIndicator(false);
                 console.log(this.output);
                 console.log('Retrieved');
+            },(err) => {
+                this.error_flag = true;
+                console.log(err);
             });
         });
     }

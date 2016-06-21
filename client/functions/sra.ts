@@ -8,17 +8,20 @@ export function sra(sra){
             else{
                 var id = [];
                 var json = JSON.parse(xmlToJson(res.content));
-                id.push(json.eSearchResult.IdList.Id)
-                var url1='http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=sra&id='+id.join(',');
-                HTTP.call('GET',url1,{timeout: 50000}, function(err,result){
-                    if (err) reject(err.reason);
-                    else{
-                        var id2=[]
-                        var json2 = JSON.parse(xmlToJson(result.content));
-                        id2.push(json2.EXPERIMENT_PACKAGE_SET.EXPERIMENT_PACKAGE)
-                        resolve({SRAid:id[0],Record:id2[0]})
-                    }
-                });
+                if (json.eSearchResult.IdList){
+                    id.push(json.eSearchResult.IdList.Id)
+                    var url1='http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=sra&id='+id.join(',');
+                    HTTP.call('GET',url1,{timeout: 50000}, function(err,result){
+                        if (err) reject(err.reason);
+                        else{
+                            var id2=[]
+                            var json2 = JSON.parse(xmlToJson(result.content));
+                            id2.push(json2.EXPERIMENT_PACKAGE_SET.EXPERIMENT_PACKAGE)
+                            resolve({SRAid:id[0],Record:id2[0]})
+                        }
+                    });
+                }
+                else(reject('NOTHING AVAILABLE'))
             }
         });
     });

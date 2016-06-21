@@ -44,10 +44,16 @@ SRA / SRP / GSM / ERP number
     SELECT ALL RECORDS
 <button class="button" (click) ="Selected()">WRITE RECORDS TO DATABASE</button>
 </tr>
-<!--Displaying input-->
-<div *ngIf ="!output">
+<!--Displaying Loading-->
+<div *ngIf ="(!(output) && (!error_flag))" >
     <loading-indicator></loading-indicator>
 </div>
+
+<!--Error Diplay-->
+<div *ngIf = "error_flag">
+    RECORD not available
+</div>
+
 <ul *ngIf="output?.length > 0 ">
     <tr *ngFor="let item of output; #i = index">
         <div class="field">
