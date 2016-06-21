@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import 'zone.js/dist/zone';
 import { Component, provide} from '@angular/core';
 import { bootstrap } from '@angular/platform-browser-dynamic';
-import { sra } from '../client/sra';
+import { sra } from './functions/sra';
 import { DisplayPipe } from './display.pipe.ts';
 import { LinkPipe } from "./link.pipe.ts";
 import { NO_SANITIZATION_PROVIDERS } from './sanity';
@@ -41,6 +41,7 @@ class Interface {
   
     //Display the SRA details
     getsra(id,lab_id,grp_id) {
+        
         //window.location.reload();
         this.output = null;
         this.loadingservice.toggleLoadingIndicator(true);

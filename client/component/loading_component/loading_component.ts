@@ -8,7 +8,7 @@ import {LoadingService} from "./loading_service";
     template:`
 <div [style.visibility]="isLoading ? 'visible':'hidden'" class="loading-indicator-container">
     <div class="bullet-one">
-        <img src="http://delpad.com/template/bitrix/img/loading.gif">
+        <img src="loading.gif" alt="LOADING...">
         <style>
             img{
                 vertical-align: text-top;

@@ -4,13 +4,10 @@ import { Mongo } from 'meteor/mongo';
 import { config } from './config'
 
 
-
 var Mysql = Npm.require('mysql');
 var Client = Npm.require('ftp');
 
 var genome, exp;
-var author = 'bharath';
-var value;
 
 var pool = Mysql.createPool(config);
 
